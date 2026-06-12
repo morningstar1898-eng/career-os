@@ -48,7 +48,7 @@ def submit_answer(req: InterviewAnswerRequest):
     response = litellm.completion(
         model="anthropic/claude-haiku-4-5-20251001",
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=800,
+        max_tokens=1200,
         temperature=0.3,
         api_key=os.getenv("ANTHROPIC_API_KEY"),
     )

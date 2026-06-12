@@ -146,48 +146,68 @@ export default function InterviewPage() {
 
           {session.ai_feedback && (() => {
             let fb: any;
-            try { fb = JSON.parse(session.ai_feedback); } catch { fb = { how_to_improve: session.ai_feedback }; }
-            const scoreColor = (session.score || 0) >= 7 ? "text-success" : (session.score || 0) >= 5 ? "text-warning" : "text-danger";
-            const barColor = (session.score || 0) >= 7 ? "bg-success" : (session.score || 0) >= 5 ? "bg-warning" : "bg-danger";
+            try {
+              const parsed = JSON.parse(session.ai_feedback);
+              fb = typeof parsed === "string" ? JSON.parse(parsed) : parsed;
+            } catch {
+              fb = { how_to_improve: session.ai_feedback };
+            }
+            const s = session.score || 0;
+            const scoreColor = s >= 7 ? "text-success" : s >= 5 ? "text-warning" : "text-danger";
+            const barColor = s >= 7 ? "bg-success" : s >= 5 ? "bg-warning" : "bg-danger";
+            const scoreLabel = s >= 8 ? "Strong" : s >= 6 ? "Good" : s >= 4 ? "Getting There" : "Needs Work";
             return (
               <>
-                {/* Score */}
                 <div className="glass-card p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={`text-3xl font-bold ${scoreColor}`}>{session.score}/10</div>
-                    <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full transition-all ${barColor}`}
-                        style={{ width: `${(session.score || 0) * 10}%` }} />
+                  <div className="flex items-center gap-4">
+                    <div className="text-center">
+                      <div className={`text-4xl font-bold ${scoreColor}`}>{s}</div>
+                      <div className={`text-xs font-medium mt-1 ${scoreColor}`}>{scoreLabel}</div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+                          style={{ width: `${s * 10}%` }} />
+                      </div>
                     </div>
                   </div>
-
-                  {fb.whats_good && (
-                    <div className="mb-4">
-                      <h3 className="text-xs uppercase text-success mb-1">What You Did Well</h3>
-                      <p className="text-sm text-zinc-300">{fb.whats_good}</p>
-                    </div>
-                  )}
-
-                  {fb.how_to_improve && (
-                    <div className="mb-4">
-                      <h3 className="text-xs uppercase text-warning mb-1">How to Improve</h3>
-                      <p className="text-sm text-zinc-300">{fb.how_to_improve}</p>
-                    </div>
-                  )}
-
-                  {fb.key_takeaway && (
-                    <div className="mt-4 p-3 rounded-lg bg-accent/10 border border-accent/20">
-                      <h3 className="text-xs uppercase text-accent mb-1">Key Takeaway</h3>
-                      <p className="text-sm text-zinc-200 font-medium">{fb.key_takeaway}</p>
-                    </div>
-                  )}
                 </div>
 
-                {/* Model Answer */}
+                {fb.whats_good && (
+                  <div className="glass-card p-5 border-l-4 border-l-success">
+                    <h3 className="text-xs uppercase text-success font-semibold tracking-wider mb-2">What You Did Well</h3>
+                    <p className="text-sm text-zinc-300 leading-relaxed">{fb.whats_good}</p>
+                  </div>
+                )}
+
+                {fb.how_to_improve && (
+                  <div className="glass-card p-5 border-l-4 border-l-warning">
+                    <h3 className="text-xs uppercase text-warning font-semibold tracking-wider mb-2">How to Improve</h3>
+                    <p className="text-sm text-zinc-300 leading-relaxed">{fb.how_to_improve}</p>
+                  </div>
+                )}
+
                 {fb.model_answer && (
-                  <div className="glass-card p-6">
-                    <h3 className="text-xs uppercase text-accent mb-2">How to Answer This</h3>
-                    <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{fb.model_answer}</p>
+                  <details className="glass-card overflow-hidden">
+                    <summary className="p-5 cursor-pointer hover:bg-zinc-800/30 transition flex items-center justify-between">
+                      <h3 className="text-xs uppercase text-accent font-semibold tracking-wider">Model Answer</h3>
+                      <span className="text-xs text-zinc-500">Click to reveal</span>
+                    </summary>
+                    <div className="px-5 pb-5 border-t border-card-border">
+                      <div className="mt-4 pl-4 border-l-2 border-accent/40">
+                        <p className="text-sm text-zinc-300 leading-relaxed italic whitespace-pre-wrap">{fb.model_answer}</p>
+                      </div>
+                    </div>
+                  </details>
+                )}
+
+                {fb.key_takeaway && (
+                  <div className="p-4 rounded-xl bg-accent/10 border border-accent/30 flex items-start gap-3">
+                    <span className="text-accent text-lg mt-0.5">*</span>
+                    <div>
+                      <h3 className="text-xs uppercase text-accent font-semibold tracking-wider mb-1">Remember This</h3>
+                      <p className="text-sm text-zinc-200 font-medium leading-relaxed">{fb.key_takeaway}</p>
+                    </div>
                   </div>
                 )}
 

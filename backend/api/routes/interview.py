@@ -55,12 +55,15 @@ def submit_answer(req: InterviewAnswerRequest):
     feedback_raw = response.choices[0].message.content.strip()
 
     try:
-        feedback_data = json.loads(feedback_raw)
+        clean = feedback_raw
+        if clean.startswith("```"):
+            clean = clean.split("\n", 1)[1].rsplit("```", 1)[0]
+        feedback_data = json.loads(clean)
         score = feedback_data.get("score", 5)
-        feedback = feedback_data.get("feedback", feedback_raw)
-    except json.JSONDecodeError:
+        feedback = json.dumps(feedback_data)
+    except (json.JSONDecodeError, IndexError):
         score = 5
-        feedback = feedback_raw
+        feedback = json.dumps({"whats_good": "", "how_to_improve": feedback_raw, "model_answer": "", "key_takeaway": ""})
 
     with get_db() as conn:
         conn.execute(
@@ -94,14 +97,20 @@ def _build_question_prompt(category: str) -> str:
 
 
 def _build_scoring_prompt(question: str, category: str, answer: str) -> str:
-    return f"""Score this interview answer on a scale of 1-10 and provide specific feedback.
+    return f"""You are a supportive senior interview coach helping a data analyst candidate improve. Score their answer and teach them.
 
 Question ({category}): {question}
 
 Candidate's answer: {answer}
 
-Respond in JSON format ONLY:
-{{"score": <1-10>, "feedback": "<2-3 sentences of specific, actionable feedback>", "model_answer": "<a strong example answer in 3-4 sentences>"}}"""
+Respond in JSON format ONLY with these fields:
+{{
+  "score": <1-10>,
+  "whats_good": "<1-2 sentences on what the candidate did well, even if the answer was weak. Find something positive.>",
+  "how_to_improve": "<2-3 sentences of specific, actionable coaching. Tell them exactly what to add, remove, or restructure. Be encouraging, not critical.>",
+  "model_answer": "<Write a complete, polished example answer as if the candidate were saying it in an interview. Use first person. Be specific with real examples. For technical questions, walk through the logic step by step in plain English first, then provide the code/query. Keep it under 200 words.>",
+  "key_takeaway": "<One sentence the candidate should remember for next time.>"
+}}"""
 
 
 def _clean_question(text: str) -> str:

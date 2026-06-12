@@ -144,25 +144,59 @@ export default function InterviewPage() {
             </div>
           )}
 
-          {session.ai_feedback && (
-            <>
-              <div className="glass-card p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`text-3xl font-bold ${(session.score || 0) >= 7 ? "text-success" : (session.score || 0) >= 5 ? "text-warning" : "text-danger"}`}>
-                    {session.score}/10
+          {session.ai_feedback && (() => {
+            let fb: any;
+            try { fb = JSON.parse(session.ai_feedback); } catch { fb = { how_to_improve: session.ai_feedback }; }
+            const scoreColor = (session.score || 0) >= 7 ? "text-success" : (session.score || 0) >= 5 ? "text-warning" : "text-danger";
+            const barColor = (session.score || 0) >= 7 ? "bg-success" : (session.score || 0) >= 5 ? "bg-warning" : "bg-danger";
+            return (
+              <>
+                {/* Score */}
+                <div className="glass-card p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`text-3xl font-bold ${scoreColor}`}>{session.score}/10</div>
+                    <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full transition-all ${barColor}`}
+                        style={{ width: `${(session.score || 0) * 10}%` }} />
+                    </div>
                   </div>
-                  <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full transition-all ${(session.score || 0) >= 7 ? "bg-success" : (session.score || 0) >= 5 ? "bg-warning" : "bg-danger"}`}
-                      style={{ width: `${(session.score || 0) * 10}%` }} />
-                  </div>
+
+                  {fb.whats_good && (
+                    <div className="mb-4">
+                      <h3 className="text-xs uppercase text-success mb-1">What You Did Well</h3>
+                      <p className="text-sm text-zinc-300">{fb.whats_good}</p>
+                    </div>
+                  )}
+
+                  {fb.how_to_improve && (
+                    <div className="mb-4">
+                      <h3 className="text-xs uppercase text-warning mb-1">How to Improve</h3>
+                      <p className="text-sm text-zinc-300">{fb.how_to_improve}</p>
+                    </div>
+                  )}
+
+                  {fb.key_takeaway && (
+                    <div className="mt-4 p-3 rounded-lg bg-accent/10 border border-accent/20">
+                      <h3 className="text-xs uppercase text-accent mb-1">Key Takeaway</h3>
+                      <p className="text-sm text-zinc-200 font-medium">{fb.key_takeaway}</p>
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm text-zinc-300">{session.ai_feedback}</p>
-              </div>
-              <button onClick={nextQuestion} className="px-4 py-2 bg-accent rounded-lg text-sm font-medium glow">
-                Next Question
-              </button>
-            </>
-          )}
+
+                {/* Model Answer */}
+                {fb.model_answer && (
+                  <div className="glass-card p-6">
+                    <h3 className="text-xs uppercase text-accent mb-2">How to Answer This</h3>
+                    <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">{fb.model_answer}</p>
+                  </div>
+                )}
+
+                <button onClick={nextQuestion} className="px-4 py-2 bg-accent rounded-lg text-sm font-medium glow">
+                  Next Question
+                </button>
+              </>
+            );
+          })()}
         </div>
       )}
 

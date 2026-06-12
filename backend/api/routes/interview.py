@@ -24,7 +24,7 @@ def start_interview(req: InterviewStartRequest):
         temperature=0.7,
         api_key=os.getenv("ANTHROPIC_API_KEY"),
     )
-    question = response.choices[0].message.content.strip()
+    question = _clean_question(response.choices[0].message.content.strip())
 
     with get_db() as conn:
         cursor = conn.execute(
@@ -82,12 +82,13 @@ def get_interview_history(limit: int = 20):
 
 def _build_question_prompt(category: str) -> str:
     name = os.getenv("YOUR_NAME", "the candidate")
+    base = "Reply with ONLY the question text. No titles, headers, markdown, labels, bullet points, or formatting. Plain text only."
     prompts = {
-        "behavioral": f"Generate one realistic behavioral interview question for a Data Analyst role. The candidate is {name}, transitioning from healthcare coding. Ask about teamwork, conflict resolution, or leadership. Just the question, nothing else.",
-        "technical": "Generate one realistic SQL or Python technical interview question for a Data Analyst role. Medium difficulty. Just the question and any setup context needed, nothing else.",
-        "domain": "Generate one interview question about data tools/concepts (Tableau, ETL, data warehousing, or healthcare analytics). Just the question, nothing else.",
-        "case_study": "Generate one case study interview question for a Data Analyst. Present a business scenario (e.g., revenue dropped, user churn increased) and ask the candidate to walk through their analysis approach. Just the scenario and question, nothing else.",
-        "questions_to_ask": "Generate one smart, specific question that a Data Analyst candidate should ask their interviewer to show research and genuine interest. Just the question, nothing else.",
+        "behavioral": f"Generate one realistic behavioral interview question for a Data Analyst role. The candidate is {name}, transitioning from healthcare coding. Ask about teamwork, conflict resolution, or leadership. {base}",
+        "technical": f"Generate one realistic SQL or Python technical interview question for a Data Analyst role. Medium difficulty. If you need to describe a table schema, write it as a plain sentence like 'You have a table called orders with columns: id, customer_id, amount, date.' Do NOT use code blocks, backticks, or markdown. {base}",
+        "domain": f"Generate one interview question about data tools or concepts such as Tableau, ETL, data warehousing, or healthcare analytics. {base}",
+        "case_study": f"Generate one case study interview question for a Data Analyst. Present a short business scenario and ask the candidate to walk through their analysis approach. {base}",
+        "questions_to_ask": f"Generate one smart, specific question that a Data Analyst candidate should ask their interviewer to show research and genuine interest. {base}",
     }
     return prompts.get(category, prompts["behavioral"])
 
@@ -101,3 +102,14 @@ Candidate's answer: {answer}
 
 Respond in JSON format ONLY:
 {{"score": <1-10>, "feedback": "<2-3 sentences of specific, actionable feedback>", "model_answer": "<a strong example answer in 3-4 sentences>"}}"""
+
+
+def _clean_question(text: str) -> str:
+    import re
+    text = re.sub(r"```[\s\S]*?```", "", text)
+    text = re.sub(r"`([^`]*)`", r"\1", text)
+    text = re.sub(r"^#+\s*", "", text, flags=re.MULTILINE)
+    text = re.sub(r"\*\*([^*]*)\*\*", r"\1", text)
+    text = re.sub(r"^\s*[-*]\s+", "", text, flags=re.MULTILINE)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()

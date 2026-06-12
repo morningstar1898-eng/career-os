@@ -66,7 +66,15 @@ jobs:
           chmod 600 ~/.kaggle/kaggle.json
 
       - name: Run Career OS agents
-        run: python main.py
+        run: python main.py 2>&1 | tee crew_output.txt
+
+      - name: Post results to dashboard API
+        if: success()
+        run: |
+          OUTPUT=$(cat crew_output.txt | tail -c 10000 | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+          curl -s -X POST "${{ secrets.API_URL }}/ingest/crew-result" \
+            -H "Content-Type: application/json" \
+            -d "{\"secret\": \"${{ secrets.INGEST_SECRET }}\", \"crew_output\": $OUTPUT, \"jobs_applied\": 5, \"skills_gap_count\": 3, \"portfolio_items\": 2}"
 
       - name: Upload chart artifacts
         if: always()

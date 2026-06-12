@@ -41,10 +41,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen p-6 max-w-6xl mx-auto">
-      <nav className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Career OS <span className="text-accent">Dashboard</span></h1>
-        <div className="flex gap-4 text-sm">
+    <main className="min-h-screen p-4 sm:p-6 max-w-6xl mx-auto">
+      <nav className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold">Career OS <span className="text-accent">Dashboard</span></h1>
+        <div className="flex gap-3 sm:gap-4 text-sm">
           <Link href="/" className="text-zinc-400 hover:text-white">Home</Link>
           <Link href="/interview" className="text-zinc-400 hover:text-white">Interview</Link>
           <Link href="/agents" className="text-zinc-400 hover:text-white">Agents</Link>
@@ -52,7 +52,7 @@ export default function DashboardPage() {
       </nav>
 
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <StatCard label="Jobs Applied" value={summary.total_jobs_applied} />
           <StatCard label="Successful Runs" value={summary.total_successful_runs} />
           <StatCard label="Avg Interview Score" value={`${summary.avg_interview_score}/10`} />
@@ -60,8 +60,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="glass-card p-6">
+      <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="glass-card p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Today&apos;s Briefing</h2>
             {briefing && (
@@ -125,7 +125,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="glass-card p-6">
+        <div className="glass-card p-4 sm:p-6">
           <h2 className="text-lg font-semibold mb-4">Progress Over Time</h2>
           <AnalyticsCharts />
         </div>
@@ -136,8 +136,8 @@ export default function DashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="glass-card p-4 text-center">
-      <div className="text-2xl font-bold text-accent">{value}</div>
+    <div className="glass-card p-3 sm:p-4 text-center">
+      <div className="text-lg sm:text-2xl font-bold text-accent">{value}</div>
       <div className="text-xs text-zinc-400 mt-1">{label}</div>
     </div>
   );

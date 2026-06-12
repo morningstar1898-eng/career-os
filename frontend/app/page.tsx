@@ -44,11 +44,11 @@ export default function Home() {
             6 AI Agents Running Daily
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6">
             Career <span className="text-accent">OS</span>
           </h1>
 
-          <p className="text-xl text-zinc-400 mb-8 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl text-zinc-400 mb-8 leading-relaxed max-w-2xl mx-auto">
             An autonomous AI system that searches jobs, builds portfolio projects,
             teaches in-demand skills, preps for interviews, and delivers a daily briefing.
             Zero manual effort.
@@ -60,6 +60,9 @@ export default function Home() {
             </Link>
             <Link href="/interview" className="px-6 py-3 border border-card-border rounded-lg font-medium hover:border-accent transition">
               Practice Interview
+            </Link>
+            <Link href="/resume" className="px-6 py-3 border border-card-border rounded-lg font-medium hover:border-accent transition">
+              Resume
             </Link>
             <button onClick={seedDemo} disabled={seeding || seeded}
               className="px-6 py-3 border border-card-border rounded-lg font-medium text-zinc-400 hover:border-accent transition disabled:opacity-50">
@@ -75,9 +78,9 @@ export default function Home() {
         <p className="text-zinc-400 text-center mb-12 max-w-xl mx-auto">
           Every weekday at 7am, six AI agents wake up and handle the entire job search pipeline autonomously.
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
           {AGENTS.map((agent, i) => (
-            <div key={agent.label} className="glass-card p-5 hover:border-accent/50 transition group">
+            <div key={agent.label} className="glass-card p-3 sm:p-5 hover:border-accent/50 transition group">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">{agent.icon}</span>
                 <span className="text-xs text-zinc-500 font-mono">Agent {i + 1}</span>
@@ -92,7 +95,7 @@ export default function Home() {
       {/* Architecture */}
       <section className="px-6 py-20 max-w-4xl mx-auto">
         <h2 className="text-3xl font-bold text-center mb-12">Architecture</h2>
-        <div className="glass-card p-8 font-mono text-xs text-zinc-400 leading-relaxed">
+        <div className="glass-card p-3 sm:p-8 font-mono text-[10px] sm:text-xs text-zinc-400 leading-relaxed">
           <pre className="overflow-x-auto">{`
   GitHub Actions (cron 7am CT)
          │

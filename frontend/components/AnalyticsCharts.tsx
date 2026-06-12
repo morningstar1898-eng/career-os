@@ -29,7 +29,7 @@ export function AnalyticsCharts() {
     <div className="space-y-6">
       <div>
         <h3 className="text-xs text-zinc-400 mb-2 uppercase">Jobs Applied</h3>
-        <ResponsiveContainer width="100%" height={120}>
+        <ResponsiveContainer width="100%" height={90} className="sm:!h-[120px]">
           <LineChart data={metrics}>
             <XAxis dataKey="date" hide />
             <YAxis hide />
@@ -40,7 +40,7 @@ export function AnalyticsCharts() {
       </div>
       <div>
         <h3 className="text-xs text-zinc-400 mb-2 uppercase">Interview Score</h3>
-        <ResponsiveContainer width="100%" height={120}>
+        <ResponsiveContainer width="100%" height={90} className="sm:!h-[120px]">
           <LineChart data={metrics}>
             <XAxis dataKey="date" hide />
             <YAxis hide domain={[0, 10]} />

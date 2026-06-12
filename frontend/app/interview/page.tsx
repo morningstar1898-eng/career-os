@@ -79,10 +79,10 @@ export default function InterviewPage() {
     : null;
 
   return (
-    <main className="min-h-screen p-6 max-w-4xl mx-auto pb-24">
-      <nav className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Interview <span className="text-accent">Practice</span></h1>
-        <div className="flex gap-3 text-sm items-center">
+    <main className="min-h-screen p-4 sm:p-6 max-w-4xl mx-auto pb-24">
+      <nav className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold">Interview <span className="text-accent">Practice</span></h1>
+        <div className="flex gap-2 sm:gap-3 text-sm items-center flex-wrap">
           <Link href="/dashboard" className="text-zinc-400 hover:text-white">Dashboard</Link>
           <button onClick={() => setShowHistory(!showHistory)} className="text-zinc-400 hover:text-white">
             {showHistory ? "Hide History" : "History"}
@@ -118,20 +118,20 @@ export default function InterviewPage() {
 
       {session && (
         <div className="space-y-6">
-          <div className="glass-card p-6">
+          <div className="glass-card p-4 sm:p-6">
             <div className="text-xs text-accent uppercase mb-2">{session.category.replace(/_/g, " ")}</div>
-            <p className="text-lg">{session.question}</p>
+            <p className="text-base sm:text-lg">{session.question}</p>
           </div>
 
           {!session.ai_feedback && (
-            <div className="glass-card p-6">
+            <div className="glass-card p-4 sm:p-6">
               <textarea
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 placeholder="Type your answer or click the mic..."
                 className="w-full bg-transparent border border-card-border rounded-lg p-3 text-sm min-h-[120px] focus:outline-none focus:border-accent resize-y"
               />
-              <div className="flex gap-3 mt-3">
+              <div className="flex flex-col sm:flex-row gap-3 mt-3">
                 <button onClick={submitAnswer} disabled={loading || !answer.trim()}
                   className="px-4 py-2 bg-accent rounded-lg text-sm font-medium disabled:opacity-50">
                   {loading ? "Scoring..." : "Submit Answer"}
@@ -158,10 +158,10 @@ export default function InterviewPage() {
             const scoreLabel = s >= 8 ? "Strong" : s >= 6 ? "Good" : s >= 4 ? "Getting There" : "Needs Work";
             return (
               <>
-                <div className="glass-card p-6">
+                <div className="glass-card p-4 sm:p-6">
                   <div className="flex items-center gap-4">
                     <div className="text-center">
-                      <div className={`text-4xl font-bold ${scoreColor}`}>{s}</div>
+                      <div className={`text-3xl sm:text-4xl font-bold ${scoreColor}`}>{s}</div>
                       <div className={`text-xs font-medium mt-1 ${scoreColor}`}>{scoreLabel}</div>
                     </div>
                     <div className="flex-1">
@@ -174,14 +174,14 @@ export default function InterviewPage() {
                 </div>
 
                 {fb.whats_good && (
-                  <div className="glass-card p-5 border-l-4 border-l-success">
+                  <div className="glass-card p-3 sm:p-5 border-l-4 border-l-success">
                     <h3 className="text-xs uppercase text-success font-semibold tracking-wider mb-2">What You Did Well</h3>
                     <p className="text-sm text-zinc-300 leading-relaxed">{fb.whats_good}</p>
                   </div>
                 )}
 
                 {fb.how_to_improve && (
-                  <div className="glass-card p-5 border-l-4 border-l-warning">
+                  <div className="glass-card p-3 sm:p-5 border-l-4 border-l-warning">
                     <h3 className="text-xs uppercase text-warning font-semibold tracking-wider mb-2">How to Improve</h3>
                     <p className="text-sm text-zinc-300 leading-relaxed">{fb.how_to_improve}</p>
                   </div>
@@ -232,7 +232,7 @@ export default function InterviewPage() {
           <h2 className="text-lg font-semibold mb-4">Recent Sessions</h2>
           <div className="space-y-2">
             {history.map((h) => (
-              <div key={h.id} className="glass-card p-4 flex items-center justify-between">
+              <div key={h.id} className="glass-card p-3 sm:p-4 flex items-center justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <span className="text-xs text-accent uppercase">{h.category.replace(/_/g, " ")}</span>
                   <p className="text-sm text-zinc-300 truncate">{h.question}</p>

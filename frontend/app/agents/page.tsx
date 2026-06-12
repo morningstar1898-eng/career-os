@@ -110,10 +110,10 @@ export default function AgentsPage() {
   }, [latestRun?.status, latestRun?.id]);
 
   return (
-    <main className="min-h-screen p-6 max-w-6xl mx-auto pb-24">
-      <nav className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Agent <span className="text-accent">Monitor</span></h1>
-        <div className="flex gap-4 text-sm items-center">
+    <main className="min-h-screen p-4 sm:p-6 max-w-6xl mx-auto pb-24">
+      <nav className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold">Agent <span className="text-accent">Monitor</span></h1>
+        <div className="flex gap-3 sm:gap-4 text-sm items-center">
           <span className={`flex items-center gap-1.5 text-xs ${connected ? "text-success" : "text-zinc-500"}`}>
             <span className={`w-2 h-2 rounded-full ${connected ? "bg-success pulse-dot" : "bg-zinc-600"}`} />
             {connected ? "Live" : "Disconnected"}
@@ -154,7 +154,7 @@ export default function AgentsPage() {
         )}
       </div>
 
-      <div className="glass-card p-4 h-[65vh] overflow-y-auto font-mono text-xs">
+      <div className="glass-card p-3 sm:p-4 h-[50vh] sm:h-[65vh] overflow-y-auto font-mono text-xs">
         {logs.length === 0 ? (
           <p className="text-zinc-500">Waiting for agent output... Trigger a run or wait for the daily cron.</p>
         ) : (

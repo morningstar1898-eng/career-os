@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createRecognition, speak } from "../lib/voice";
+import { createRecognition, speak, stopSpeaking } from "../lib/voice";
 import { fetchAPI } from "../lib/api";
 
 export function JarvisBar() {
@@ -15,14 +15,32 @@ export function JarvisBar() {
     const lower = text.toLowerCase();
     setTranscript(text);
 
-    if (lower.includes("briefing") || lower.includes("today")) {
-      router.push("/dashboard");
-      speak("Opening your daily briefing.");
+    // Stop any current speech before handling a new command
+    stopSpeaking();
+
+    if (lower.includes("briefing") || lower.includes("what's my briefing") || lower.includes("today")) {
+      speak("Fetching your briefing.");
+      fetchAPI<any>("/briefings/today")
+        .then((b) => {
+          const msg = b.summary
+            || `You have ${b.new_jobs ?? 0} new jobs, ${b.interviews_scheduled ?? 0} interviews scheduled, and ${b.tasks_due ?? 0} tasks due today.`;
+          setResponse(msg);
+          speak(msg);
+        })
+        .catch(() => {
+          router.push("/dashboard");
+          speak("I couldn't fetch the briefing, so I'm opening your dashboard instead.");
+        });
       return;
     }
-    if (lower.includes("interview") || lower.includes("practice")) {
+    if (lower.includes("start an interview") || lower.includes("interview") || lower.includes("practice")) {
       router.push("/interview");
       speak("Let's practice some interview questions.");
+      return;
+    }
+    if (lower.includes("dashboard")) {
+      router.push("/dashboard");
+      speak("Opening your dashboard.");
       return;
     }
     if (lower.includes("agents") || lower.includes("monitor") || lower.includes("status")) {
@@ -35,7 +53,7 @@ export function JarvisBar() {
       speak("Going home.");
       return;
     }
-    if (lower.includes("how many jobs") || lower.includes("jobs applied")) {
+    if (lower.includes("how many jobs") || lower.includes("job stats") || lower.includes("jobs applied")) {
       fetchAPI<any>("/analytics/summary")
         .then((s) => {
           const msg = `You've applied to ${s.total_jobs_applied} jobs over ${s.days_active} active days. Your average interview score is ${s.avg_interview_score} out of 10.`;
@@ -56,7 +74,7 @@ export function JarvisBar() {
       return;
     }
 
-    speak("I can help with: briefing, interview practice, agent status, or job stats. Try again.");
+    speak("I can help with: briefing, interview practice, dashboard, agent status, or job stats. Try again.");
   }
 
   function startListening() {
@@ -75,7 +93,7 @@ export function JarvisBar() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-2 mb-safe">
       {(transcript || response) && (
         <div className="glass-card p-3 max-w-xs text-xs">
           {transcript && <p className="text-zinc-400">You: {transcript}</p>}

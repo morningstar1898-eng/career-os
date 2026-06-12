@@ -1,0 +1,192 @@
+import Link from "next/link";
+
+const SKILLS = [
+  { category: "Languages & Query", items: ["SQL", "Python", "DAX"] },
+  { category: "Visualization", items: ["Tableau", "Power BI", "Recharts"] },
+  { category: "Data Tools", items: ["Excel", "ETL Pipelines", "Data Warehousing"] },
+  { category: "Domain", items: ["Healthcare Analytics", "Claims Data", "Revenue Integrity"] },
+  { category: "AI & Automation", items: ["CrewAI", "Claude AI", "GitHub Actions"] },
+  { category: "Web & Cloud", items: ["Next.js", "FastAPI", "Azure", "Vercel"] },
+];
+
+const PROJECTS = [
+  {
+    title: "Career OS",
+    desc: "AI-powered 6-agent system that autonomously searches jobs, builds portfolio projects, teaches skills, and preps for interviews daily.",
+    tech: ["CrewAI", "FastAPI", "Next.js", "Claude AI"],
+    repo: "https://github.com/morningstar1898-eng/career-os",
+  },
+  {
+    title: "Healthcare Fraud Risk Analytics",
+    desc: "End-to-end fraud detection pipeline using anomaly scoring and provider risk profiling on Medicare claims data.",
+    tech: ["Python", "SQL", "Tableau"],
+    repo: "https://github.com/morningstar1898-eng/healthcare-fraud-risk-analytics",
+  },
+  {
+    title: "Healthcare Revenue Integrity Analytics",
+    desc: "Revenue leakage identification and charge capture analysis across hospital billing workflows.",
+    tech: ["Python", "SQL", "Power BI"],
+    repo: "https://github.com/morningstar1898-eng/healthcare-revenue-integrity-analytics",
+  },
+  {
+    title: "Claims Efficiency Analysis",
+    desc: "Claims processing cycle-time analysis with denial root-cause identification and payer benchmarking.",
+    tech: ["SQL", "Python", "Tableau"],
+    repo: "https://github.com/morningstar1898-eng/claims-efficiency-analysis",
+  },
+  {
+    title: "Provider Performance Analytics",
+    desc: "Provider scorecards measuring quality metrics, cost efficiency, and patient outcomes across networks.",
+    tech: ["SQL", "Python", "Tableau"],
+    repo: "https://github.com/morningstar1898-eng/provider-performance-analytics",
+  },
+  {
+    title: "End-to-End Healthcare Pipeline",
+    desc: "Full data engineering pipeline: ingestion, transformation, warehousing, and reporting for healthcare datasets.",
+    tech: ["Python", "SQL", "Azure", "ETL"],
+    repo: "https://github.com/morningstar1898-eng/end-to-end-healthcare-pipeline",
+  },
+];
+
+export default function ResumePage() {
+  return (
+    <main className="min-h-screen">
+      {/* Nav */}
+      <nav className="fixed top-0 w-full z-50 border-b border-card-border bg-background/80 backdrop-blur-md">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Link href="/" className="text-sm text-zinc-400 hover:text-white transition">
+            &larr; Back to Dashboard
+          </Link>
+          <div className="flex gap-4 text-sm">
+            <a href="#experience" className="text-zinc-400 hover:text-accent transition">Experience</a>
+            <a href="#projects" className="text-zinc-400 hover:text-accent transition">Projects</a>
+            <a href="#skills" className="text-zinc-400 hover:text-accent transition">Skills</a>
+          </div>
+        </div>
+      </nav>
+
+      {/* Header */}
+      <section className="pt-28 pb-12 px-6 text-center">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-2">
+            Meagan <span className="text-accent">Parsons</span>
+          </h1>
+          <p className="text-xl text-zinc-400 mb-4">Data Analyst</p>
+          <div className="flex flex-wrap gap-4 justify-center text-sm text-zinc-400">
+            <a href="mailto:morningstar1898@gmail.com" className="hover:text-accent transition">
+              morningstar1898@gmail.com
+            </a>
+            <span className="text-zinc-600">|</span>
+            <a href="https://github.com/morningstar1898-eng" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition">
+              GitHub
+            </a>
+            <span className="text-zinc-600">|</span>
+            <a href="https://linkedin.com/in/meagan-parsons" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition">
+              LinkedIn
+            </a>
+            <span className="text-zinc-600">|</span>
+            <a href="https://www.kaggle.com/meaganparsons" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition">
+              Kaggle
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Summary */}
+      <section className="px-6 pb-16 max-w-3xl mx-auto">
+        <div className="glass-card p-6 sm:p-8">
+          <h2 className="text-lg font-semibold text-accent mb-3">Professional Summary</h2>
+          <p className="text-zinc-300 leading-relaxed">
+            Healthcare data professional with 5+ years of experience at Optum/UnitedHealth Group,
+            transitioning into a data analyst role. Combines deep domain expertise in claims processing,
+            revenue integrity, and provider analytics with strong technical skills in SQL, Python, and
+            Tableau. MBA in Finance &amp; Data Analytics. Passionate about building data-driven solutions
+            that improve outcomes and efficiency &mdash; from fraud detection models to fully autonomous
+            AI-powered career management systems.
+          </p>
+        </div>
+      </section>
+
+      {/* Experience */}
+      <section id="experience" className="px-6 pb-16 max-w-3xl mx-auto scroll-mt-20">
+        <h2 className="text-2xl font-bold mb-6">Experience</h2>
+        <div className="glass-card p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-white">Healthcare Analyst</h3>
+              <p className="text-accent">Optum / UnitedHealth Group</p>
+            </div>
+            <span className="text-sm text-zinc-500 mt-1 sm:mt-0">2019 &ndash; Present</span>
+          </div>
+          <ul className="space-y-2 text-zinc-300 text-sm list-disc list-inside">
+            <li>Analyze healthcare claims data to identify trends, anomalies, and cost-saving opportunities across payer and provider networks.</li>
+            <li>Build SQL queries and Python scripts to automate reporting workflows, reducing manual effort by 40%+.</li>
+            <li>Develop Tableau dashboards for executive stakeholders to monitor KPIs including denial rates, claim cycle times, and revenue leakage.</li>
+            <li>Collaborate with cross-functional teams on data quality initiatives and ETL pipeline improvements.</li>
+            <li>Support fraud, waste, and abuse detection through statistical analysis and anomaly scoring models.</li>
+          </ul>
+        </div>
+      </section>
+
+      {/* Education */}
+      <section className="px-6 pb-16 max-w-3xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6">Education</h2>
+        <div className="glass-card p-6 sm:p-8">
+          <h3 className="text-lg font-semibold text-white">Master of Business Administration (MBA)</h3>
+          <p className="text-accent">Finance &amp; Data Analytics</p>
+          <p className="text-sm text-zinc-500 mt-1">Relevant coursework: Business Analytics, Financial Modeling, Data-Driven Decision Making, Statistical Methods</p>
+        </div>
+      </section>
+
+      {/* Skills */}
+      <section id="skills" className="px-6 pb-16 max-w-3xl mx-auto scroll-mt-20">
+        <h2 className="text-2xl font-bold mb-6">Skills</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {SKILLS.map((group) => (
+            <div key={group.category} className="glass-card p-5">
+              <h3 className="text-sm font-semibold text-accent mb-3">{group.category}</h3>
+              <div className="flex flex-wrap gap-2">
+                {group.items.map((skill) => (
+                  <span key={skill} className="px-3 py-1 text-xs rounded-full border border-card-border text-zinc-300 hover:border-accent hover:text-accent transition">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Projects */}
+      <section id="projects" className="px-6 pb-20 max-w-5xl mx-auto scroll-mt-20">
+        <h2 className="text-2xl font-bold mb-6 text-center">Projects</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {PROJECTS.map((project) => (
+            <a
+              key={project.title}
+              href={project.repo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass-card p-5 hover:border-accent/50 transition group flex flex-col"
+            >
+              <h3 className="font-semibold text-white group-hover:text-accent transition mb-2">{project.title}</h3>
+              <p className="text-xs text-zinc-400 mb-4 flex-1">{project.desc}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {project.tech.map((t) => (
+                  <span key={t} className="px-2 py-0.5 text-[10px] rounded-full bg-accent/10 text-accent border border-accent/20">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="px-6 py-12 text-center border-t border-card-border">
+        <p className="text-zinc-500 text-sm">Meagan Parsons &middot; Data Analyst &middot; Open to opportunities</p>
+      </footer>
+    </main>
+  );
+}

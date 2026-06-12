@@ -87,7 +87,39 @@ def build_tasks(agents: dict) -> list:
         context=[task_scan],
     )
 
-    # ── Task 5: Compile briefing ──────────────────────────
+    # ── Task 5: Interview prep ─────────────────────────────
+    task_interview = Task(
+        description=(
+            f"Today is {TODAY}. Using the top job postings and skill gaps from Task 1, "
+            f"generate a daily interview prep session for {NAME}. Create exactly 10 questions "
+            "across these 5 categories (2 each):\n\n"
+            "**1. Behavioral (STAR format)** — Questions about teamwork, conflict, leadership, "
+            "failure, or prioritization. Write model answers using STAR format (Situation, Task, "
+            f"Action, Result) drawn from {NAME}'s real experience at Optum/UHG, CorroHealth, "
+            "or MBA projects. Include specific metrics (95%+ accuracy, team of 20, etc.).\n\n"
+            "**2. Technical SQL/Python** — Write a realistic SQL query or Python code question "
+            "that a hiring manager would ask for a Data Analyst role. Provide the correct answer "
+            f"with explanation. Match the difficulty to {NAME}'s current skill level.\n\n"
+            "**3. Domain/Tool Knowledge** — Questions about Tableau, Power BI, Excel, "
+            "data pipelines, ETL, data warehousing, or healthcare analytics. Answers should "
+            "reference real tools and workflows the candidate has used.\n\n"
+            "**4. Case Study / Business Scenario** — Present a realistic business problem "
+            "(e.g., 'Revenue dropped 15% in Q3 — walk me through your analysis') and write "
+            "a structured answer showing analytical thinking and stakeholder communication.\n\n"
+            "**5. Questions to Ask the Interviewer** — Two smart, specific questions that show "
+            "research and genuine interest (not generic 'what's the culture like' questions).\n\n"
+            "For EVERY answer: sound confident and specific, not rehearsed. Use first person. "
+            "Lead with impact. Acknowledge growth areas honestly. Keep each answer under 200 words."
+        ),
+        expected_output=(
+            "A structured interview prep document with 10 questions and polished answers "
+            "across 5 categories, all personalized to the candidate's real background."
+        ),
+        agent=agents["interview_coach"],
+        context=[task_scan],
+    )
+
+    # ── Task 6: Compile briefing ──────────────────────────
     task_brief = Task(
         description=(
             f"Today is {TODAY}. Compile all agent outputs into one Notion daily briefing for {NAME}. "
@@ -97,14 +129,15 @@ def build_tasks(agents: dict) -> list:
             "## Today's Lesson (summary of lesson + link to full content), "
             "## Jobs Applied Today (table: company | role | status), "
             "## Portfolio Update (dataset analyzed + chart URLs), "
+            "## Interview Prep (today's 10 practice Q&As by category), "
             "## Tomorrow's Focus (one sentence: what to practice). "
-            "Keep it to what a busy person will actually read in 3 minutes."
+            "Keep it to what a busy person will actually read in 5 minutes."
         ),
         expected_output=(
             "Confirmation that the Notion page was created successfully, with the page title."
         ),
         agent=agents["orchestrator"],
-        context=[task_scan, task_data, task_lesson, task_apply],
+        context=[task_scan, task_data, task_lesson, task_apply, task_interview],
     )
 
-    return [task_scan, task_data, task_lesson, task_apply, task_brief]
+    return [task_scan, task_data, task_lesson, task_apply, task_interview, task_brief]

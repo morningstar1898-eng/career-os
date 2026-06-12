@@ -8,9 +8,10 @@ from api.ws import broadcast
 
 router = APIRouter()
 
+_active_loop = None
+
 
 def _run_crew(run_id: int):
-    import io
     import sys
     import os
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -24,27 +25,26 @@ def _run_crew(run_id: int):
     from crewai import Crew, Process
     import json
 
-    class StreamCapture(io.TextIOWrapper):
-        def __init__(self, original):
+    class StreamCapture:
+        def __init__(self, original, loop):
             self.original = original
-            self.loop = None
+            self.loop = loop
+            self.encoding = getattr(original, "encoding", "utf-8")
 
         def write(self, text):
             self.original.write(text)
-            if text.strip() and self.loop:
-                asyncio.run_coroutine_threadsafe(broadcast(text), self.loop)
+            if text.strip() and self.loop and self.loop.is_running():
+                asyncio.run_coroutine_threadsafe(broadcast(text.rstrip()), self.loop)
             return len(text)
 
         def flush(self):
             self.original.flush()
 
-    capture = StreamCapture(sys.stdout)
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-    capture.loop = loop
+        def fileno(self):
+            return self.original.fileno()
 
+    loop = _active_loop
+    capture = StreamCapture(sys.stdout, loop)
     old_stdout = sys.stdout
     sys.stdout = capture
 
@@ -89,6 +89,12 @@ def _run_crew(run_id: int):
 
 @router.post("/trigger", response_model=RunResponse)
 def trigger_run(req: RunTriggerRequest, background_tasks: BackgroundTasks):
+    global _active_loop
+    try:
+        _active_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        _active_loop = None
+
     with get_db() as conn:
         cursor = conn.execute(
             "INSERT INTO runs (started_at, status, trigger) VALUES (?, 'running', ?)",

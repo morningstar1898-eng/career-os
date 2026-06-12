@@ -1,39 +1,37 @@
 # .github/workflows/daily_career_os.yml
 # Runs your full agent crew every day at 7:00 AM Central Time (13:00 UTC)
-# Zero input needed from you — GitHub's servers run this for free.
 
 name: Daily Career OS
 
 on:
   schedule:
-    - cron: "0 13 * * 1-5"   # 7am Central, Monday–Friday only
-  workflow_dispatch:           # also lets you trigger it manually from GitHub UI
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch:
 
 jobs:
   run-career-agents:
     runs-on: ubuntu-latest
-    timeout-minutes: 45        # kill if it hangs
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
-      # ── 1. Get the code ─────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Set up Python ─────────────────────────────────
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
+          cache-dependency-path: backend/requirements.txt
 
-      # ── 3. Install dependencies ───────────────────────────
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # ── 4. Write secrets to .env ──────────────────────────
-      # All secrets are set in: GitHub repo → Settings → Secrets → Actions
       - name: Write .env from secrets
         run: |
           cat > .env << EOF
@@ -56,28 +54,24 @@ jobs:
           SKILLS_CURRENT=${{ secrets.SKILLS_CURRENT }}
           EOF
 
-      # ── 5. Write Google credentials JSON ─────────────────
       - name: Write Google credentials
         run: |
           mkdir -p config
           echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > config/google_credentials.json
 
-      # ── 6. Write Kaggle credentials ───────────────────────
       - name: Write Kaggle credentials
         run: |
           mkdir -p ~/.kaggle
           echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
 
-      # ── 7. Run the crew ───────────────────────────────────
       - name: Run Career OS agents
         run: python main.py
 
-      # ── 8. Upload any generated charts as artifacts ───────
       - name: Upload chart artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: portfolio-charts-${{ github.run_id }}
-          path: outputs/*.png
+          path: backend/outputs/*.png
           retention-days: 30

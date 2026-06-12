@@ -1,7 +1,9 @@
 .env
-config/google_credentials.json
-config/kaggle.json
-outputs/
+backend/.env
+backend/config/google_credentials.json
+backend/config/kaggle.json
+backend/outputs/
+backend/*.db
 __pycache__/
 *.pyc
 .DS_Store
@@ -10,3 +12,7 @@ venv/
 dist/
 build/
 .pytest_cache/
+node_modules/
+frontend/.next/
+frontend/out/
+.env.local

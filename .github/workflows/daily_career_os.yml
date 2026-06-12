@@ -1,0 +1,83 @@
+# .github/workflows/daily_career_os.yml
+# Runs your full agent crew every day at 7:00 AM Central Time (13:00 UTC)
+# Zero input needed from you — GitHub's servers run this for free.
+
+name: Daily Career OS
+
+on:
+  schedule:
+    - cron: "0 13 * * 1-5"   # 7am Central, Monday–Friday only
+  workflow_dispatch:           # also lets you trigger it manually from GitHub UI
+
+jobs:
+  run-career-agents:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45        # kill if it hangs
+
+    steps:
+      # ── 1. Get the code ─────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Set up Python ─────────────────────────────────
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      # ── 3. Install dependencies ───────────────────────────
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ── 4. Write secrets to .env ──────────────────────────
+      # All secrets are set in: GitHub repo → Settings → Secrets → Actions
+      - name: Write .env from secrets
+        run: |
+          cat > .env << EOF
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          SERPER_API_KEY=${{ secrets.SERPER_API_KEY }}
+          NOTION_API_KEY=${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID=${{ secrets.NOTION_DATABASE_ID }}
+          GOOGLE_CREDENTIALS_JSON=config/google_credentials.json
+          GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}
+          GMAIL_SENDER=${{ secrets.GMAIL_SENDER }}
+          AZURE_SQL_CONNECTION_STRING=${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          AZURE_STORAGE_CONNECTION_STRING=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
+          AZURE_STORAGE_CONTAINER=portfolio-charts
+          KAGGLE_USERNAME=${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY=${{ secrets.KAGGLE_KEY }}
+          YOUR_NAME=${{ secrets.YOUR_NAME }}
+          TARGET_ROLES=${{ secrets.TARGET_ROLES }}
+          TARGET_CITIES=${{ secrets.TARGET_CITIES }}
+          DEGREE=${{ secrets.DEGREE }}
+          SKILLS_CURRENT=${{ secrets.SKILLS_CURRENT }}
+          EOF
+
+      # ── 5. Write Google credentials JSON ─────────────────
+      - name: Write Google credentials
+        run: |
+          mkdir -p config
+          echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > config/google_credentials.json
+
+      # ── 6. Write Kaggle credentials ───────────────────────
+      - name: Write Kaggle credentials
+        run: |
+          mkdir -p ~/.kaggle
+          echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+      # ── 7. Run the crew ───────────────────────────────────
+      - name: Run Career OS agents
+        run: python main.py
+
+      # ── 8. Upload any generated charts as artifacts ───────
+      - name: Upload chart artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-charts-${{ github.run_id }}
+          path: outputs/*.png
+          retention-days: 30

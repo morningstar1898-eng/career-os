@@ -11,7 +11,7 @@ on:
 jobs:
   run-career-agents:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     defaults:
       run:
         working-directory: backend
@@ -34,7 +34,7 @@ jobs:
 
       - name: Write .env from secrets
         run: |
-          cat > .env << EOF
+          cat > .env <<'EOF'
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
           SERPER_API_KEY=${{ secrets.SERPER_API_KEY }}
           NOTION_API_KEY=${{ secrets.NOTION_API_KEY }}
@@ -53,6 +53,8 @@ jobs:
           DEGREE=${{ secrets.DEGREE }}
           SKILLS_CURRENT=${{ secrets.SKILLS_CURRENT }}
           EOF
+          sed -i 's/^[[:space:]]*//' .env
+          sed -i 's/\xEF\xBB\xBF//g' .env
 
       - name: Write Google credentials
         run: |

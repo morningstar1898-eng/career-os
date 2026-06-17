@@ -119,6 +119,7 @@ export default function AgentsPage() {
             {connected ? "Live" : "Disconnected"}
           </span>
           <Link href="/dashboard" className="text-zinc-400 hover:text-white">Dashboard</Link>
+          <button onClick={() => { localStorage.removeItem("career_os_token"); window.location.href = "/"; }} className="text-zinc-500 hover:text-white text-xs">Logout</button>
         </div>
       </nav>
 

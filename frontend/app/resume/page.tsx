@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 
 const SKILLS = [
@@ -61,6 +63,7 @@ export default function ResumePage() {
             <a href="#experience" className="text-zinc-400 hover:text-accent transition">Experience</a>
             <a href="#projects" className="text-zinc-400 hover:text-accent transition">Projects</a>
             <a href="#skills" className="text-zinc-400 hover:text-accent transition">Skills</a>
+            <button onClick={() => { localStorage.removeItem("career_os_token"); window.location.href = "/"; }} className="text-zinc-500 hover:text-white text-xs">Logout</button>
           </div>
         </div>
       </nav>

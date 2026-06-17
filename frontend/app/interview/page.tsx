@@ -54,7 +54,25 @@ export default function InterviewPage() {
     });
     setSession(s);
     setLoading(false);
-    if (voiceEnabled && s.ai_feedback) speak(s.ai_feedback);
+    if (voiceEnabled && s.ai_feedback) {
+      let fb: any;
+      try {
+        const parsed = JSON.parse(s.ai_feedback);
+        fb = typeof parsed === "string" ? JSON.parse(parsed) : parsed;
+      } catch {
+        fb = null;
+      }
+      if (fb && typeof fb === "object") {
+        const parts: string[] = [];
+        if (s.score !== undefined) parts.push(`You scored a ${s.score} out of 10.`);
+        if (fb.whats_good) parts.push(`What you did well: ${fb.whats_good}.`);
+        if (fb.how_to_improve) parts.push(`To improve: ${fb.how_to_improve}.`);
+        if (fb.key_takeaway) parts.push(`Remember: ${fb.key_takeaway}.`);
+        speak(parts.join(" "));
+      } else {
+        speak(s.ai_feedback);
+      }
+    }
   }
 
   function startListening() {
@@ -90,6 +108,7 @@ export default function InterviewPage() {
           <button onClick={() => setVoiceEnabled(!voiceEnabled)} className={`px-3 py-1 rounded ${voiceEnabled ? "bg-accent" : "bg-zinc-700"} text-xs`}>
             {voiceEnabled ? "Voice On" : "Voice Off"}
           </button>
+          <button onClick={() => { localStorage.removeItem("career_os_token"); window.location.href = "/"; }} className="text-zinc-500 hover:text-white text-xs">Logout</button>
         </div>
       </nav>
 

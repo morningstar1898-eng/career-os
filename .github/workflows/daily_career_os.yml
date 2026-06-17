@@ -78,6 +78,14 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{\"secret\": \"${{ secrets.INGEST_SECRET }}\", \"crew_output\": $OUTPUT, \"jobs_applied\": 5, \"skills_gap_count\": 3, \"portfolio_items\": 2}"
 
+      - name: Send email briefing
+        if: success()
+        continue-on-error: true
+        run: |
+          curl -s -X POST "${{ secrets.API_URL }}/email/briefing" \
+            -H "Content-Type: application/json" \
+            -d '{"secret": "${{ secrets.INGEST_SECRET }}", "to": "${{ secrets.EMAIL_TO }}"}'
+
       - name: Upload chart artifacts
         if: always()
         uses: actions/upload-artifact@v4

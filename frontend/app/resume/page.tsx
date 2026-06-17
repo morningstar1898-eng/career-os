@@ -3,12 +3,12 @@
 import Link from "next/link";
 
 const SKILLS = [
-  { category: "Languages & Query", items: ["SQL", "Python", "DAX"] },
-  { category: "Visualization", items: ["Tableau", "Power BI", "Recharts"] },
-  { category: "Data Tools", items: ["Excel", "ETL Pipelines", "Data Warehousing"] },
-  { category: "Domain", items: ["Healthcare Analytics", "Claims Data", "Revenue Integrity"] },
-  { category: "AI & Automation", items: ["CrewAI", "Claude AI", "GitHub Actions"] },
-  { category: "Web & Cloud", items: ["Next.js", "FastAPI", "Azure", "Vercel"] },
+  { category: "SQL & Databases", items: ["PostgreSQL", "SQL Server", "dbt", "Data Modeling"] },
+  { category: "Python & Analytics", items: ["pandas", "NumPy", "SciPy", "Jupyter"] },
+  { category: "Visualization", items: ["Tableau", "Power BI", "matplotlib", "Recharts"] },
+  { category: "Data Engineering", items: ["ETL Pipelines", "Data Warehousing", "Airflow", "Azure"] },
+  { category: "Domain Expertise", items: ["Healthcare Claims", "Revenue Integrity", "Fraud Analytics", "Provider Performance"] },
+  { category: "Tools & Platforms", items: ["Git", "GitHub Actions", "Excel", "DAX", "Vercel"] },
 ];
 
 const PROJECTS = [
@@ -48,6 +48,12 @@ const PROJECTS = [
     tech: ["Python", "SQL", "Azure", "ETL"],
     repo: "https://github.com/morningstar1898-eng/end-to-end-healthcare-pipeline",
   },
+  {
+    title: "Healthcare Data Warehouse (dbt)",
+    desc: "Analytics engineering project with dbt + PostgreSQL: staging, intermediate, and mart layers for healthcare claims warehousing.",
+    tech: ["dbt", "PostgreSQL", "Python", "SQL"],
+    repo: "https://github.com/morningstar1898-eng/healthcare-warehouse-dbt",
+  },
 ];
 
 export default function ResumePage() {
@@ -74,7 +80,7 @@ export default function ResumePage() {
           <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-2">
             Meagan <span className="text-accent">Parsons</span>
           </h1>
-          <p className="text-xl text-zinc-400 mb-4">Data Analyst</p>
+          <p className="text-xl text-zinc-400 mb-4">Senior Data Analyst | Analytics Engineer</p>
           <div className="flex flex-wrap gap-4 justify-center text-sm text-zinc-400">
             <a href="mailto:morningstar1898@gmail.com" className="hover:text-accent transition">
               morningstar1898@gmail.com
@@ -100,12 +106,13 @@ export default function ResumePage() {
         <div className="glass-card p-6 sm:p-8">
           <h2 className="text-lg font-semibold text-accent mb-3">Professional Summary</h2>
           <p className="text-zinc-300 leading-relaxed">
-            Healthcare data professional with 5+ years of experience at Optum/UnitedHealth Group,
-            transitioning into a data analyst role. Combines deep domain expertise in claims processing,
-            revenue integrity, and provider analytics with strong technical skills in SQL, Python, and
-            Tableau. MBA in Finance &amp; Data Analytics. Passionate about building data-driven solutions
-            that improve outcomes and efficiency &mdash; from fraud detection models to fully autonomous
-            AI-powered career management systems.
+            Senior healthcare analytics professional with 5+ years at Optum/UnitedHealth Group,
+            specializing in claims analytics, revenue integrity, and provider performance optimization.
+            Builds end-to-end data pipelines and warehouses using SQL, Python, dbt, and PostgreSQL.
+            Delivers executive dashboards and statistical models that have identified $2M+ in revenue
+            leakage and reduced claim denial rates by 18%. MBA in Finance &amp; Data Analytics.
+            Seeking Senior Data Analyst or Analytics Engineer roles where I can drive measurable
+            business impact through data.
           </p>
         </div>
       </section>
@@ -116,17 +123,18 @@ export default function ResumePage() {
         <div className="glass-card p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
             <div>
-              <h3 className="text-lg font-semibold text-white">Healthcare Analyst</h3>
+              <h3 className="text-lg font-semibold text-white">Senior Healthcare Analyst</h3>
               <p className="text-accent">Optum / UnitedHealth Group</p>
             </div>
             <span className="text-sm text-zinc-500 mt-1 sm:mt-0">2019 &ndash; Present</span>
           </div>
           <ul className="space-y-2 text-zinc-300 text-sm list-disc list-inside">
-            <li>Analyze healthcare claims data to identify trends, anomalies, and cost-saving opportunities across payer and provider networks.</li>
-            <li>Build SQL queries and Python scripts to automate reporting workflows, reducing manual effort by 40%+.</li>
-            <li>Develop Tableau dashboards for executive stakeholders to monitor KPIs including denial rates, claim cycle times, and revenue leakage.</li>
-            <li>Collaborate with cross-functional teams on data quality initiatives and ETL pipeline improvements.</li>
-            <li>Support fraud, waste, and abuse detection through statistical analysis and anomaly scoring models.</li>
+            <li>Identified $2M+ in annual revenue leakage by building charge-to-payment variance models across 500+ provider contracts, leading to renegotiation of 12 underpaying payer agreements.</li>
+            <li>Reduced claim denial rate by 18% through root-cause analysis of 50K+ denied claims, implementing automated flagging rules that caught coding errors before submission.</li>
+            <li>Built and maintained 15+ Tableau dashboards used by C-suite and VP-level stakeholders to monitor $200M+ in annual claims volume, denial trends, and provider performance.</li>
+            <li>Automated weekly reporting pipelines using Python and SQL, cutting report generation time from 8 hours to 45 minutes and eliminating manual data entry errors.</li>
+            <li>Designed provider performance scorecards benchmarking 120+ providers on quality, cost efficiency, and utilization metrics, directly informing network strategy decisions.</li>
+            <li>Led fraud, waste, and abuse analytics initiative that flagged $500K+ in suspicious claims through anomaly detection and provider risk profiling models.</li>
           </ul>
         </div>
       </section>
@@ -188,7 +196,7 @@ export default function ResumePage() {
 
       {/* Footer */}
       <footer className="px-6 py-12 text-center border-t border-card-border">
-        <p className="text-zinc-500 text-sm">Meagan Parsons &middot; Data Analyst &middot; Open to opportunities</p>
+        <p className="text-zinc-500 text-sm">Meagan Parsons &middot; Senior Data Analyst | Analytics Engineer &middot; Open to opportunities</p>
       </footer>
     </main>
   );

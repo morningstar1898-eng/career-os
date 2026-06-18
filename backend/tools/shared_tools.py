@@ -77,8 +77,15 @@ class SheetsLoggerTool(BaseTool):
     description: str = "Log a job application to Google Sheets. Input: JSON with keys: company, role, url, status, date_applied, notes."
 
     def _run(self, input_str: str) -> str:
+        # Strip UTF-8 BOM, whitespace, and any markdown code fences the model
+        # may wrap around the JSON (these were silently breaking every log).
+        raw = (input_str or "").lstrip("﻿").strip()
+        if raw.startswith("```"):
+            raw = raw.strip("`").strip()
+            if raw[:4].lower() == "json":
+                raw = raw[4:].strip()
         try:
-            data = json.loads(input_str)
+            data = json.loads(raw)
         except Exception:
             return "Error: input must be valid JSON."
 

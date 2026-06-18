@@ -88,6 +88,31 @@ class SheetsLoggerTool(BaseTool):
         )
         service = build("sheets", "v4", credentials=creds)
         sheet_id = os.getenv("GOOGLE_SHEET_ID")
+        values = service.spreadsheets().values()
+
+        # One-time: ensure a header row so the running application log reads
+        # like a proper reference table. Never let this block the actual log.
+        header = ["Company", "Role", "URL", "Status", "Date Applied", "Notes"]
+        try:
+            first = values.get(
+                spreadsheetId=sheet_id, range="Sheet1!A1:F1"
+            ).execute().get("values", [])
+            first_row = first[0] if first else []
+            if not first_row or first_row[0] != header[0]:
+                if first_row:  # existing data with no header → push a blank row on top
+                    service.spreadsheets().batchUpdate(
+                        spreadsheetId=sheet_id,
+                        body={"requests": [{"insertDimension": {
+                            "range": {"sheetId": 0, "dimension": "ROWS",
+                                      "startIndex": 0, "endIndex": 1},
+                            "inheritFromBefore": False}}]},
+                    ).execute()
+                values.update(
+                    spreadsheetId=sheet_id, range="Sheet1!A1:F1",
+                    valueInputOption="USER_ENTERED", body={"values": [header]},
+                ).execute()
+        except Exception:
+            pass  # header is cosmetic; proceed to log regardless
 
         row = [
             data.get("company", ""),
@@ -97,7 +122,7 @@ class SheetsLoggerTool(BaseTool):
             data.get("date_applied", datetime.now().strftime("%Y-%m-%d")),
             data.get("notes", ""),
         ]
-        service.spreadsheets().values().append(
+        values.append(
             spreadsheetId=sheet_id,
             range="Sheet1!A:F",
             valueInputOption="USER_ENTERED",

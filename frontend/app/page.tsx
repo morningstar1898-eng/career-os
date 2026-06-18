@@ -61,6 +61,9 @@ export default function Home() {
             <Link href="/interview" className="px-6 py-3 border border-card-border rounded-lg font-medium hover:border-accent transition">
               Practice Interview
             </Link>
+            <Link href="/projects" className="px-6 py-3 border border-card-border rounded-lg font-medium hover:border-accent transition">
+              Projects
+            </Link>
             <Link href="/resume" className="px-6 py-3 border border-card-border rounded-lg font-medium hover:border-accent transition">
               Resume
             </Link>
@@ -145,6 +148,12 @@ export default function Home() {
         <div className="mt-4 flex gap-4 justify-center text-sm">
           <a href="https://github.com/morningstar1898-eng/career-os" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-white transition">
             GitHub
+          </a>
+          <a href="https://public.tableau.com/app/profile/meagan.parsons" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-white transition">
+            Tableau Public
+          </a>
+          <a href="https://www.linkedin.com/in/meagan-parsons-37321a177/" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-white transition">
+            LinkedIn
           </a>
           <a href="https://www.kaggle.com/meaganparsons" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-white transition">
             Kaggle

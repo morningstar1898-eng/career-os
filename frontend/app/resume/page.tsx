@@ -81,6 +81,9 @@ export default function ResumePage() {
             Meagan <span className="text-accent">Parsons</span>
           </h1>
           <p className="text-xl text-zinc-400 mb-4">Senior Data Analyst | Analytics Engineer</p>
+          <a href="/Meagan_Parsons_Resume.docx" download className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-accent text-accent rounded-lg hover:bg-accent hover:text-white transition mb-4">
+            Download Resume
+          </a>
           <div className="flex flex-wrap gap-4 justify-center text-sm text-zinc-400">
             <a href="mailto:morningstar1898@gmail.com" className="hover:text-accent transition">
               morningstar1898@gmail.com
@@ -90,8 +93,12 @@ export default function ResumePage() {
               GitHub
             </a>
             <span className="text-zinc-600">|</span>
-            <a href="https://linkedin.com/in/meagan-parsons" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition">
+            <a href="https://www.linkedin.com/in/meagan-parsons-37321a177/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition">
               LinkedIn
+            </a>
+            <span className="text-zinc-600">|</span>
+            <a href="https://public.tableau.com/app/profile/meagan.parsons/vizzes" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition">
+              Tableau
             </a>
             <span className="text-zinc-600">|</span>
             <a href="https://www.kaggle.com/meaganparsons" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition">

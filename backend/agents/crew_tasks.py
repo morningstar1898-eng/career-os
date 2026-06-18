@@ -9,21 +9,32 @@ from crewai import Task
 TODAY = datetime.now().strftime("%A, %B %d %Y")
 ROLES = os.getenv("TARGET_ROLES", "Data Analyst")
 NAME  = os.getenv("YOUR_NAME", "the candidate")
+COMPANIES = os.getenv("TARGET_COMPANIES", "")
+JOBS_PER_DAY = int(os.getenv("JOBS_PER_DAY", "10"))
 
 def build_tasks(agents: dict) -> list:
 
     # ── Task 1: Scan job market ────────────────────────────
+    company_focus = (
+        f"PRIORITY: also specifically search for openings at these companies: {COMPANIES}. "
+        "Include AI/ML engineering and research roles, and Anthropic's Fellows program "
+        "(fellowship/residency openings). Make sure at least 3 of these priority-company "
+        "roles appear in the final list when any are open. "
+        if COMPANIES else ""
+    )
     task_scan = Task(
         description=(
             f"Today is {TODAY}. Search for '{ROLES}' job postings on LinkedIn, Indeed, and Glassdoor. "
-            "Find at least 10 real, current postings. For each, extract the required technical skills. "
+            f"Find at least {JOBS_PER_DAY + 5} real, current postings. {company_focus}"
+            "For each, extract the required technical skills. "
             "Tally all skills across all postings. Output: "
             "(A) ranked list of top 10 skills by frequency, "
-            "(B) the 5 most critical gaps for someone new to the field, "
-            "(C) the top 5 job postings with title, company, URL, and key requirements."
+            "(B) the 5 most critical gaps for the candidate, "
+            f"(C) the top {JOBS_PER_DAY} job postings with title, company, URL, and key requirements "
+            "(prioritize the priority companies above when they have relevant openings)."
         ),
         expected_output=(
-            "A structured report with three sections: Top Skills Ranked, Skill Gaps, and Top 5 Job Postings."
+            f"A structured report with three sections: Top Skills Ranked, Skill Gaps, and Top {JOBS_PER_DAY} Job Postings."
         ),
         agent=agents["skills_scout"],
     )
@@ -71,17 +82,19 @@ def build_tasks(agents: dict) -> list:
     # ── Task 4: Apply to jobs ─────────────────────────────
     task_apply = Task(
         description=(
-            f"Today is {TODAY}. Take the top 5 job postings from Task 1. "
+            f"Today is {TODAY}. Take the top {JOBS_PER_DAY} job postings from Task 1. "
             f"For each posting: "
             "1) Write 3 tailored resume bullet points that match the job requirements, "
             f"   drawing on {NAME}'s {os.getenv('DEGREE','MBA in Data Analytics')} and data projects. "
             "2) Write a 3-paragraph cover letter (under 200 words). "
             "3) Log the application to Google Sheets using the log_to_sheets tool with: "
             "   company, role, url, status='Applied', date_applied=today, notes=key requirement. "
-            "Do this for all 5 jobs. Never invent experience. Focus on transferable MBA skills."
+            f"Do this for all {JOBS_PER_DAY} jobs. Never invent experience. Focus on transferable skills. "
+            "For stretch roles (e.g. AI/ML engineering or Anthropic Fellows), be honest about the "
+            "candidate's growth areas while emphasizing transferable analytical and domain strengths."
         ),
         expected_output=(
-            "For each of 5 jobs: tailored bullet points, cover letter, and confirmation of Sheets log."
+            f"For each of {JOBS_PER_DAY} jobs: tailored bullet points, cover letter, and confirmation of Sheets log."
         ),
         agent=agents["job_applicant"],
         context=[task_scan],

@@ -87,9 +87,11 @@ def build_tasks(agents: dict) -> list:
             "1) Write 3 tailored resume bullet points that match the job requirements, "
             f"   drawing on {NAME}'s {os.getenv('DEGREE','MBA in Data Analytics')} and data projects. "
             "2) Write a 3-paragraph cover letter (under 200 words). "
-            "3) Log the application to Google Sheets using the log_to_sheets tool with: "
+            "3) Log the application to Google Sheets by CALLING the log_to_sheets tool with: "
             "   company, role, url, status='Applied', date_applied=today, notes=key requirement. "
-            f"Do this for all {JOBS_PER_DAY} jobs. Never invent experience. Focus on transferable skills. "
+            f"You MUST call log_to_sheets once per job — do NOT finish until all {JOBS_PER_DAY} jobs are "
+            "logged to the sheet (this is the most important step; drafting without logging is a failure). "
+            "Never invent experience. Focus on transferable skills. "
             "For stretch roles (e.g. AI/ML engineering or Anthropic Fellows), be honest about the "
             "candidate's growth areas while emphasizing transferable analytical and domain strengths."
         ),

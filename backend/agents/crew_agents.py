@@ -94,9 +94,10 @@ def build_agents():
     job_applicant = Agent(
         role="Job Application Specialist",
         goal=(
-            f"Given today's top 5 job postings for {roles}, tailor {name}'s resume bullet points "
+            f"Given today's top job postings for {roles}, tailor {name}'s resume bullet points "
             f"and write a custom cover letter for each role. "
-            "Log every application to Google Sheets with: company, role, URL, date, status=Applied. "
+            "You MUST call the log_to_sheets tool exactly once for EVERY job (company, role, URL, "
+            "date, status=Applied). The task is not complete until every job has been logged. "
             f"Emphasize the {degree} and any data projects. Never fabricate experience."
         ),
         backstory=(
@@ -109,7 +110,7 @@ def build_agents():
         llm=llm,
         verbose=True,
         allow_delegation=False,
-        max_iter=10,
+        max_iter=30,
     )
 
     # ── Agent 6: Interview Coach ─────────────────────────

@@ -7,6 +7,21 @@ import os, sys, time
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+# Make ALL json parsing tolerant of a leading UTF-8 BOM. Tool-call inputs from
+# the model sometimes arrive with a BOM that crashes CrewAI's own argument
+# parsing *before* a tool runs — which was silently breaking every Google
+# Sheets application log. Patch globally so CrewAI internals are covered too.
+import json as _json
+_orig_json_loads = _json.loads
+def _bom_safe_loads(s, *args, **kwargs):
+    if isinstance(s, (bytes, bytearray)):
+        s = s.decode("utf-8-sig")
+    elif isinstance(s, str):
+        s = s.lstrip("﻿")
+    return _orig_json_loads(s, *args, **kwargs)
+_json.loads = _bom_safe_loads
+
 from datetime import datetime
 from dotenv import load_dotenv
 

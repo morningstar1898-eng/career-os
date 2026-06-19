@@ -20,7 +20,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Skip a scheduled run if today's briefing already exists (e.g. a manual
+      # trigger already ran). Manual dispatches always run (never skipped).
+      - name: Guard against duplicate run
+        id: guard
+        run: |
+          SKIP=false
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.API_URL }}/briefings/today")
+            if [ "$CODE" = "200" ]; then SKIP=true; fi
+            echo "Scheduled run — briefing endpoint returned $CODE (skip=$SKIP)"
+          fi
+          echo "skip=$SKIP" >> "$GITHUB_OUTPUT"
+
       - name: Set up Python 3.11
+        if: steps.guard.outputs.skip == 'false'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -28,11 +42,13 @@ jobs:
           cache-dependency-path: backend/requirements.txt
 
       - name: Install dependencies
+        if: steps.guard.outputs.skip == 'false'
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Write .env from secrets
+        if: steps.guard.outputs.skip == 'false'
         run: |
           cat > .env <<'EOF'
           ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
@@ -59,21 +75,24 @@ jobs:
           sed -i 's/\xEF\xBB\xBF//g' .env
 
       - name: Write Google credentials
+        if: steps.guard.outputs.skip == 'false'
         run: |
           mkdir -p config
           echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > config/google_credentials.json
 
       - name: Write Kaggle credentials
+        if: steps.guard.outputs.skip == 'false'
         run: |
           mkdir -p ~/.kaggle
           echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
 
       - name: Run Career OS agents
+        if: steps.guard.outputs.skip == 'false'
         run: python main.py 2>&1 | tee crew_output.txt
 
       - name: Post results to dashboard API
-        if: success()
+        if: success() && steps.guard.outputs.skip == 'false'
         run: |
           python3 clean_briefing.py > clean_output.txt
           OUTPUT=$(python3 -c "import json; print(json.dumps(open('clean_output.txt', encoding='utf-8').read()))")
@@ -82,7 +101,7 @@ jobs:
             -d "{\"secret\": \"${{ secrets.INGEST_SECRET }}\", \"crew_output\": $OUTPUT, \"jobs_applied\": 10, \"skills_gap_count\": 3, \"portfolio_items\": 2}"
 
       - name: Send email briefing
-        if: success()
+        if: success() && steps.guard.outputs.skip == 'false'
         continue-on-error: true
         run: |
           curl -s -X POST "${{ secrets.API_URL }}/email/briefing" \
@@ -90,7 +109,7 @@ jobs:
             -d '{"secret": "${{ secrets.INGEST_SECRET }}", "to": "${{ secrets.EMAIL_TO }}"}'
 
       - name: Upload chart artifacts
-        if: always()
+        if: always() && steps.guard.outputs.skip == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: portfolio-charts-${{ github.run_id }}

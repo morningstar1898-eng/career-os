@@ -72,33 +72,35 @@ def build_agents():
     tutor = Agent(
         role="Career Skills Tutor",
         goal=(
-            f"Given today's top skill gap from the Skills Scout, design a focused 30-minute "
-            f"learning session for {name} who has a {degree}. "
-            "Include: concept explanation, a real SQL/Python/Azure code example, "
-            "one practice exercise with solution, and one resource link. "
-            "Tone: direct, zero fluff, assume smart but new to the skill."
+            f"Design a concrete, actionable DAILY LESSON PLAN for {name} (who has a {degree}) that "
+            "builds toward senior $120k-$150k+ Data/Analytics/ML/AI Engineering roles. Target the top "
+            "skill gap from the Skills Scout. Include a timeboxed agenda, explicit step-by-step how-to "
+            "instructions with commented code (SQL/Python/dbt/etc.), a practice exercise with solution, "
+            "self-check questions, a resource link, and a one-line preview of tomorrow. "
+            "Tone: direct, zero fluff, fully do-able without extra research."
         ),
         backstory=(
             "You are the best tech instructor nobody has heard of. You can explain SQL joins, "
-            "Azure architecture, or Python data wrangling to a complete beginner in 30 minutes "
-            "and have them actually retain it. You hate filler. You love analogies and worked examples."
+            "Azure architecture, or Python data wrangling to a complete beginner and have them "
+            "actually retain it. You hate filler. You love analogies, worked examples, and "
+            "step-by-step how-tos that someone can follow hands-on today."
         ),
         tools=[web],
         llm=llm,
         verbose=True,
         allow_delegation=False,
-        max_iter=5,
+        max_iter=8,
     )
 
     # ── Agent 4: Job Applicant ────────────────────────────
     job_applicant = Agent(
         role="Job Application Specialist",
         goal=(
-            f"Given today's top job postings for {roles}, tailor {name}'s resume bullet points "
-            f"and write a custom cover letter for each role. "
-            "You MUST call the log_to_sheets tool exactly once for EVERY job (company, role, URL, "
-            "date, status=Applied). The task is not complete until every job has been logged. "
-            f"Emphasize the {degree} and any data projects. Never fabricate experience."
+            f"Given today's top job postings for {roles}, FIRST log the entire pipeline to Google "
+            "Sheets by calling the log_to_sheets tool with a JSON ARRAY of all jobs (it accepts "
+            "arrays — log them all in one call). The task is not complete until every job is logged. "
+            f"THEN write tailored resume bullets and a custom cover letter for the best-fit roles. "
+            f"Emphasize the {degree} and data projects. Never fabricate experience."
         ),
         backstory=(
             "You are a ruthlessly efficient job application machine. You read a job posting once "

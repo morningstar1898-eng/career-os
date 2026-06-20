@@ -74,7 +74,11 @@ class NotionWriterTool(BaseTool):
 # ─────────────────────────────────────────────
 class SheetsLoggerTool(BaseTool):
     name: str = "log_to_sheets"
-    description: str = "Log a job application to Google Sheets. Input: JSON with keys: company, role, url, status, date_applied, notes."
+    description: str = (
+        "Log job applications to Google Sheets. Input is JSON and can be EITHER a single "
+        "object OR an array of objects (preferred — log many at once in one call). Each "
+        "object has keys: company, role, url, status, date_applied, notes."
+    )
 
     def _run(self, input_str: str) -> str:
         # Strip UTF-8 BOM, whitespace, and any markdown code fences the model
@@ -121,21 +125,29 @@ class SheetsLoggerTool(BaseTool):
         except Exception:
             pass  # header is cosmetic; proceed to log regardless
 
-        row = [
-            data.get("company", ""),
-            data.get("role", ""),
-            data.get("url", ""),
-            data.get("status", "Applied"),
-            data.get("date_applied", datetime.now().strftime("%Y-%m-%d")),
-            data.get("notes", ""),
-        ]
+        today = datetime.now().strftime("%Y-%m-%d")
+        items = data if isinstance(data, list) else [data]
+        rows = []
+        for d in items:
+            if not isinstance(d, dict):
+                continue
+            rows.append([
+                d.get("company", ""),
+                d.get("role", ""),
+                d.get("url", ""),
+                d.get("status", "Applied"),
+                d.get("date_applied", today),
+                d.get("notes", ""),
+            ])
+        if not rows:
+            return "Error: no valid application objects to log."
         values.append(
             spreadsheetId=sheet_id,
             range="Sheet1!A:F",
             valueInputOption="USER_ENTERED",
-            body={"values": [row]}
+            body={"values": rows}
         ).execute()
-        return f"✅ Logged application to {data.get('company')} → Sheets"
+        return f"✅ Logged {len(rows)} application(s) to Sheets"
 
 
 # ─────────────────────────────────────────────

@@ -10,7 +10,9 @@ TODAY = datetime.now().strftime("%A, %B %d %Y")
 ROLES = os.getenv("TARGET_ROLES", "Data Analyst")
 NAME  = os.getenv("YOUR_NAME", "the candidate")
 COMPANIES = os.getenv("TARGET_COMPANIES", "")
-JOBS_PER_DAY = int(os.getenv("JOBS_PER_DAY", "10"))
+JOBS_PER_DAY = int(os.getenv("JOBS_PER_DAY", "50"))
+FULL_APPLICATIONS = min(int(os.getenv("FULL_APPLICATIONS", "15")), JOBS_PER_DAY)
+SALARY_TARGET = os.getenv("SALARY_TARGET", "$120,000-$150,000+")
 
 def build_tasks(agents: dict) -> list:
 
@@ -24,14 +26,16 @@ def build_tasks(agents: dict) -> list:
     )
     task_scan = Task(
         description=(
-            f"Today is {TODAY}. Search for '{ROLES}' job postings on LinkedIn, Indeed, and Glassdoor. "
-            f"Find at least {JOBS_PER_DAY + 5} real, current postings. {company_focus}"
-            "For each, extract the required technical skills. "
-            "Tally all skills across all postings. Output: "
+            f"Today is {TODAY}. Search for job postings on LinkedIn, Indeed, and Glassdoor across "
+            f"these role families: {ROLES} (i.e. Data Analyst, Analytics Engineer, Data Engineer, "
+            f"Machine Learning Engineer, and AI Engineer). "
+            f"Find at least {JOBS_PER_DAY + 10} real, current postings. {company_focus}"
+            f"PRIORITIZE roles that pay {SALARY_TARGET} (senior / mid-senior level). "
+            "For each, extract the required technical skills. Tally all skills across all postings. Output: "
             "(A) ranked list of top 10 skills by frequency, "
-            "(B) the 5 most critical gaps for the candidate, "
-            f"(C) the top {JOBS_PER_DAY} job postings with title, company, URL, and key requirements "
-            "(prioritize the priority companies above when they have relevant openings)."
+            "(B) the 5 most critical skill gaps for the candidate to reach those salary bands, "
+            f"(C) the top {JOBS_PER_DAY} job postings with title, company, URL, salary (if listed), and key "
+            "requirements — prioritize the priority companies and the highest-paying / best-fit roles first."
         ),
         expected_output=(
             f"A structured report with three sections: Top Skills Ranked, Skill Gaps, and Top {JOBS_PER_DAY} Job Postings."
@@ -61,19 +65,25 @@ def build_tasks(agents: dict) -> list:
     # ── Task 3: Today's lesson ────────────────────────────
     task_lesson = Task(
         description=(
-            f"Today is {TODAY}. Using the #1 skill gap identified in Task 1, "
-            f"create a 30-minute learning session for {NAME}. Structure it as: "
-            "## What it is (2 sentences), "
-            "## Why employers want it (1 sentence), "
-            "## Core concept with a real-world analogy, "
-            "## Code example (SQL or Python, 15-20 lines, commented), "
-            "## Practice exercise (one problem), "
-            "## Solution, "
-            "## One resource (free, include URL). "
-            "Be concrete. Use a real dataset or business scenario in examples."
+            f"Today is {TODAY}. Build {NAME} a concrete DAILY LESSON PLAN that moves her toward "
+            f"{SALARY_TARGET} Data/Analytics/ML/AI Engineering roles. Target the #1 skill gap from "
+            "Task 1 (rotate focus day to day so over time it builds a curriculum: SQL → Python → dbt "
+            "→ data modeling/warehousing → ML basics → LLM/AI engineering). Structure it as a "
+            "step-by-step plan she can DO today, in markdown:\n"
+            "## Today's Focus (skill + why it matters for the salary target, 2 sentences)\n"
+            "## Lesson Plan (a numbered, timeboxed agenda for ~45-60 min, e.g. 1. Concept 10m, "
+            "2. Guided example 15m, 3. Hands-on 25m, 4. Review 10m)\n"
+            "## Step-by-Step How-To (the actual instructions to follow for the hands-on part — "
+            "exact steps, commands, and a commented code example in SQL/Python/dbt as relevant)\n"
+            "## Practice Exercise (one realistic problem using a healthcare or business dataset)\n"
+            "## Solution (worked answer with explanation)\n"
+            "## Check Yourself (3 questions to confirm understanding)\n"
+            "## Free Resource (one specific link) and ## Tomorrow's Preview (one line). "
+            "Be concrete and actionable — she should be able to follow the steps without further research."
         ),
         expected_output=(
-            "A complete 30-minute learning module in markdown with all 7 sections."
+            "A complete, actionable daily lesson plan in markdown with timeboxed agenda, "
+            "step-by-step how-to instructions, a practice exercise + solution, and next-day preview."
         ),
         agent=agents["tutor"],
         context=[task_scan],
@@ -82,21 +92,25 @@ def build_tasks(agents: dict) -> list:
     # ── Task 4: Apply to jobs ─────────────────────────────
     task_apply = Task(
         description=(
-            f"Today is {TODAY}. Take the top {JOBS_PER_DAY} job postings from Task 1. "
-            f"For each posting: "
-            "1) Write 3 tailored resume bullet points that match the job requirements, "
-            f"   drawing on {NAME}'s {os.getenv('DEGREE','MBA in Data Analytics')} and data projects. "
-            "2) Write a 3-paragraph cover letter (under 200 words). "
-            "3) Log the application to Google Sheets by CALLING the log_to_sheets tool with: "
-            "   company, role, url, status='Applied', date_applied=today, notes=key requirement. "
-            f"You MUST call log_to_sheets once per job — do NOT finish until all {JOBS_PER_DAY} jobs are "
-            "logged to the sheet (this is the most important step; drafting without logging is a failure). "
-            "Never invent experience. Focus on transferable skills. "
-            "For stretch roles (e.g. AI/ML engineering or Anthropic Fellows), be honest about the "
-            "candidate's growth areas while emphasizing transferable analytical and domain strengths."
+            f"Today is {TODAY}. Work the top {JOBS_PER_DAY} job postings from Task 1, prioritizing "
+            f"roles paying {SALARY_TARGET} and the priority companies.\n\n"
+            f"STEP 1 — LOG ALL {JOBS_PER_DAY} (most important; do this first): Make ONE call to the "
+            "log_to_sheets tool passing a JSON ARRAY of all the jobs. Each array item: "
+            "{{company, role, url, status:'Applied', date_applied:today, notes:(key requirement + "
+            "one-line fit note)}}. The tool accepts an array, so log them all in a single call "
+            f"(split into 2-3 calls only if needed). Do NOT finish until all {JOBS_PER_DAY} are logged — "
+            "logging the full pipeline is the #1 deliverable.\n\n"
+            f"STEP 2 — FULL APPLICATION MATERIALS for the {FULL_APPLICATIONS} best-fit / highest-paying "
+            f"roles: for each, write 3 tailored resume bullet points (drawing on {NAME}'s "
+            f"{os.getenv('DEGREE','MBA in Data Analytics')}, healthcare-analytics experience, and data "
+            "projects) and a 3-paragraph cover letter under 200 words.\n\n"
+            "Never invent experience. Emphasize transferable analytical + healthcare-domain strengths. "
+            "For stretch AI/ML roles (incl. Anthropic Fellows), be honest about growth areas while "
+            "showing a credible path."
         ),
         expected_output=(
-            f"For each of {JOBS_PER_DAY} jobs: tailored bullet points, cover letter, and confirmation of Sheets log."
+            f"Confirmation that all {JOBS_PER_DAY} applications were logged to Sheets, plus full tailored "
+            f"bullet points and cover letters for the top {FULL_APPLICATIONS} roles."
         ),
         agent=agents["job_applicant"],
         context=[task_scan],

@@ -43,7 +43,7 @@ def build_agents():
         llm=llm,
         verbose=True,
         allow_delegation=False,
-        max_iter=5,
+        max_iter=14,
     )
 
     # ── Agent 2: Data Analyst ──────────────────────────────

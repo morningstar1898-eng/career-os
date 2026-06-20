@@ -10,8 +10,8 @@ TODAY = datetime.now().strftime("%A, %B %d %Y")
 ROLES = os.getenv("TARGET_ROLES", "Data Analyst")
 NAME  = os.getenv("YOUR_NAME", "the candidate")
 COMPANIES = os.getenv("TARGET_COMPANIES", "")
-JOBS_PER_DAY = int(os.getenv("JOBS_PER_DAY", "50"))
-FULL_APPLICATIONS = min(int(os.getenv("FULL_APPLICATIONS", "15")), JOBS_PER_DAY)
+JOBS_PER_DAY = int(os.getenv("JOBS_PER_DAY", "20"))
+FULL_APPLICATIONS = min(int(os.getenv("FULL_APPLICATIONS", "10")), JOBS_PER_DAY)
 SALARY_TARGET = os.getenv("SALARY_TARGET", "$120,000-$150,000+")
 
 def build_tasks(agents: dict) -> list:

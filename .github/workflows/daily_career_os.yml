@@ -67,7 +67,7 @@ jobs:
           TARGET_ROLES=${{ secrets.TARGET_ROLES }}
           TARGET_CITIES=${{ secrets.TARGET_CITIES }}
           TARGET_COMPANIES=${{ secrets.TARGET_COMPANIES }}
-          JOBS_PER_DAY=50
+          JOBS_PER_DAY=20
           DEGREE=${{ secrets.DEGREE }}
           SKILLS_CURRENT=${{ secrets.SKILLS_CURRENT }}
           EOF

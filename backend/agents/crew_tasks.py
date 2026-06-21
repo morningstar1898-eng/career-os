@@ -52,17 +52,20 @@ def build_tasks(agents: dict) -> list:
     # ── Task 2: Daily data project ─────────────────────────
     task_data = Task(
         description=(
-            f"Today is {TODAY}. Based on the job domain from Task 1's skill gaps, "
-            "find a relevant free dataset on Kaggle (search for it). "
-            "Write complete Python code (pandas + matplotlib) that: "
-            "1) loads the dataset, 2) cleans it, 3) produces 3 insightful charts, "
-            "4) saves charts as PNG files to ./outputs/, 5) prints a 3-sentence insight summary. "
-            "The code must be production-quality with comments. "
-            "Then upload each chart PNG to Azure Blob Storage using the upload_to_azure tool. "
-            "Output: the full Python code block + the insight summary + Azure URLs."
+            f"Today is {TODAY}. Based on the skill gaps and roles from Task 1, propose ONE concrete, "
+            f"build-worthy PORTFOLIO PROJECT CONCEPT that would impress recruiters for {SALARY_TARGET} "
+            "data / analytics / ML engineering roles and plays to the candidate's healthcare-domain edge. "
+            "Provide: (1) project title + the business question it answers, (2) a REAL public dataset to "
+            "use (name + source URL — CMS, Kaggle, data.gov, HealthData.gov, etc.; do not invent one), "
+            "(3) the approach and tech stack (SQL / Python / dbt / cloud / ML as fits the theme), "
+            "(4) starter Python (pandas) code showing how to load and begin the analysis, "
+            "(5) which skills/certs it demonstrates. "
+            "This is a CONCEPT for the candidate to build into a polished case study — it is NOT uploaded "
+            "anywhere. The weekly project picker promotes the best of these into a real portfolio piece."
         ),
         expected_output=(
-            "Complete runnable Python code, a 3-sentence insight summary, and Azure blob URLs for each chart."
+            "A portfolio project concept: title, business question, real dataset + source link, "
+            "approach/tech stack, starter Python code, and the skills it demonstrates."
         ),
         agent=agents["data_analyst"],
         context=[task_scan],
@@ -156,7 +159,7 @@ def build_tasks(agents: dict) -> list:
             "## Today's Market Signal (top 3 skill gaps), "
             "## Today's Lesson (summary of lesson + link to full content), "
             "## Jobs Applied Today (table: company | role | status), "
-            "## Portfolio Update (dataset analyzed + chart URLs), "
+            "## This Week's Project Idea (the portfolio project concept + dataset), "
             "## Interview Prep (today's 10 practice Q&As by category), "
             "## Tomorrow's Focus (one sentence: what to practice). "
             "Keep it to what a busy person will actually read in 5 minutes."

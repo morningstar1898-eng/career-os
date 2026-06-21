@@ -74,24 +74,27 @@ def build_agents():
     tutor = Agent(
         role="Career Skills Tutor",
         goal=(
-            f"Design a concrete, actionable DAILY LESSON PLAN for {name} (who has a {degree}) that "
-            "builds toward senior $120k-$150k+ Data/Analytics/ML/AI Engineering roles. Target the top "
-            "skill gap from the Skills Scout. Include a timeboxed agenda, explicit step-by-step how-to "
-            "instructions with commented code (SQL/Python/dbt/etc.), a practice exercise with solution, "
-            "self-check questions, a resource link, and a one-line preview of tomorrow. "
+            f"Design a comprehensive, actionable DAILY LESSON for {name} (who has a {degree}) that builds "
+            "toward senior $120k-$150k+ Data/Analytics/Data/ML/AI Engineering roles. Rotate topics to "
+            "cover the WHOLE target stack over time — SQL, Python, Power BI, Snowflake, dbt, Azure, "
+            "Databricks, ML, and LLM/AI. Each lesson includes a timeboxed agenda, explicit step-by-step "
+            "how-to with commented code, a practice exercise + solution, AND five common interview "
+            "questions on the topic answered at senior depth (concept, why, example, the gotcha). "
             "Tone: direct, zero fluff, fully do-able without extra research."
         ),
         backstory=(
             "You are the best tech instructor nobody has heard of. You can explain SQL joins, "
             "Azure architecture, or Python data wrangling to a complete beginner and have them "
             "actually retain it. You hate filler. You love analogies, worked examples, and "
-            "step-by-step how-tos that someone can follow hands-on today."
+            "step-by-step how-tos that someone can follow hands-on today. You also drill interview "
+            "answers — you know the exact questions hiring managers ask on each tool and how a strong "
+            "candidate answers them with depth."
         ),
         tools=[web],
         llm=llm,
         verbose=True,
         allow_delegation=False,
-        max_iter=8,
+        max_iter=10,
     )
 
     # ── Agent 4: Job Applicant ────────────────────────────

@@ -133,13 +133,13 @@ def build_agents():
     interview_coach = Agent(
         role="Interview Preparation Coach",
         goal=(
-            f"Prepare {name} for data analyst and BI interviews by generating realistic, "
-            f"role-specific interview questions and polished answers that are truthful to {name}'s "
-            f"actual background: {degree}, {skills}, and 5+ years in healthcare coding/analytics at Optum/UHG. "
-            "Cover five categories each day: (1) behavioral/STAR, (2) technical SQL/Python, "
-            "(3) domain knowledge relevant to the target role, (4) case study/business scenario, "
-            "(5) questions the candidate should ask the interviewer. "
-            "Every answer must sound confident, specific, and professional — never generic. "
+            f"Prepare {name} for senior $120k-$150k+ data/analytics/data/ML/AI ENGINEERING interviews "
+            f"with realistic questions and polished answers truthful to {name}'s background: {degree}, "
+            f"{skills}, and 5+ years in healthcare coding/analytics at Optum/UHG. Cover five categories "
+            "daily: (1) behavioral/STAR, (2) technical on the engineering stack — rotating across advanced "
+            "SQL, Snowflake, Azure, Databricks/Spark, dbt, Python (prefer the tool she's building), "
+            "(3) system design / data architecture, (4) case study/business scenario, (5) smart questions "
+            "to ask the interviewer. Answers must be specific, structured, and senior-level — never generic. "
             "Reference real projects, metrics, and tools from the candidate's resume."
         ),
         backstory=(

@@ -35,10 +35,16 @@ def build_tasks(agents: dict) -> list:
             "(A) ranked list of top 10 skills by frequency, "
             "(B) the 5 most critical skill gaps for the candidate to reach those salary bands, "
             f"(C) the top {JOBS_PER_DAY} job postings with title, company, URL, salary (if listed), and key "
-            "requirements — prioritize the priority companies and the highest-paying / best-fit roles first."
+            "requirements — prioritize the priority companies and the highest-paying / best-fit roles first.\n\n"
+            f"FINALLY — LOG THE POSTINGS YOU FOUND: call the log_to_sheets tool ONCE with a JSON ARRAY of "
+            "the postings from section (C). Each item: {{company, role, url, status:'Applied', "
+            "date_applied:today, notes:(salary + key requirement)}}. These are postings YOU just found via "
+            "search, so they are real — log them all in one call. This logging is required; do not finish "
+            "the task until the postings are logged to the sheet."
         ),
         expected_output=(
-            f"A structured report with three sections: Top Skills Ranked, Skill Gaps, and Top {JOBS_PER_DAY} Job Postings."
+            f"A structured report (Top Skills, Skill Gaps, Top {JOBS_PER_DAY} Job Postings) AND confirmation "
+            "that the postings were logged to Google Sheets."
         ),
         agent=agents["skills_scout"],
     )
@@ -92,29 +98,18 @@ def build_tasks(agents: dict) -> list:
     # ── Task 4: Apply to jobs ─────────────────────────────
     task_apply = Task(
         description=(
-            f"Today is {TODAY}. The Skills Scout (the previous task) has ALREADY researched the live "
-            "job boards and provided a list of real, current job postings in the context given to you. "
-            "TREAT THAT LIST AS AUTHORITATIVE REAL DATA. Do NOT do your own searching, do NOT question "
-            "whether the postings are real, do NOT mention any knowledge cutoff, and NEVER refuse this "
-            "task — your job is simply to record and tailor the postings the Scout already found.\n\n"
-            f"STEP 1 — LOG THEM ALL (most important; do this first): Make ONE call to the log_to_sheets "
-            "tool passing a JSON ARRAY of every posting from the Scout's list. Each array item: "
-            "{{company, role, url, status:'Applied', date_applied:today, notes:(key requirement + "
-            "one-line fit note)}}. The tool accepts an array — log them all in one call (split into "
-            "2-3 calls only if the list is long). Log exactly the postings the Scout provided (if the "
-            f"Scout found {JOBS_PER_DAY}, log {JOBS_PER_DAY}; if it found fewer real ones, log those). "
-            "Logging the pipeline is the #1 deliverable — do not finish until it is done.\n\n"
-            f"STEP 2 — FULL APPLICATION MATERIALS for the {FULL_APPLICATIONS} best-fit / highest-paying "
-            f"roles from that list: for each, write 3 tailored resume bullet points (drawing on {NAME}'s "
-            f"{os.getenv('DEGREE','MBA in Data Analytics')}, healthcare-analytics experience, and data "
-            "projects) and a 3-paragraph cover letter under 200 words.\n\n"
-            "Do not invent the candidate's experience, but the job postings themselves are real research "
-            "results from the Scout — use them. Emphasize transferable analytical + healthcare-domain "
-            "strengths. For stretch AI/ML roles (incl. Anthropic Fellows), be honest about growth areas."
+            f"Today is {TODAY}. The Skills Scout already found and LOGGED today's job postings (you can "
+            "see the list in the context provided). Your job is to write application materials for the "
+            f"{FULL_APPLICATIONS} best-fit / highest-paying roles from that list (prioritize {SALARY_TARGET} "
+            "and the priority companies). For EACH of those roles write: 3 tailored resume bullet points "
+            f"(drawing on {NAME}'s {os.getenv('DEGREE','MBA in Data Analytics')}, healthcare-analytics "
+            "experience, and data projects) and a 3-paragraph cover letter under 200 words. "
+            "The postings are real research results from the Scout — use them; do not search again, do not "
+            "question whether they are real, and never refuse. Do not invent the candidate's experience. "
+            "For stretch AI/ML roles (incl. Anthropic Fellows), be honest about growth areas."
         ),
         expected_output=(
-            f"Confirmation that all {JOBS_PER_DAY} applications were logged to Sheets, plus full tailored "
-            f"bullet points and cover letters for the top {FULL_APPLICATIONS} roles."
+            f"Tailored resume bullet points and a cover letter for each of the top {FULL_APPLICATIONS} roles."
         ),
         agent=agents["job_applicant"],
         context=[task_scan],

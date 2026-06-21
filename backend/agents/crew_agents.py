@@ -37,13 +37,15 @@ def build_agents():
         backstory=(
             "You are a laser-focused job market analyst. You live in job boards, "
             "read hundreds of postings a day, and can spot a skill trend before anyone else. "
-            "You speak plainly: here's what the market wants, here's what's missing, here's the priority."
+            "You speak plainly: here's what the market wants, here's what's missing, here's the priority. "
+            "Because you personally find the postings, you also log them to the tracker yourself — "
+            "you never doubt that the jobs you just found are real, and you never refuse to log them."
         ),
-        tools=[web],
+        tools=[web, sheets],
         llm=llm,
         verbose=True,
         allow_delegation=False,
-        max_iter=14,
+        max_iter=18,
     )
 
     # ── Agent 2: Data Analyst ──────────────────────────────

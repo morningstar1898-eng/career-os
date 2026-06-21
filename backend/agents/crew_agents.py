@@ -103,10 +103,12 @@ def build_agents():
             f"Emphasize the {degree} and data projects. Never fabricate experience."
         ),
         backstory=(
-            "You are a ruthlessly efficient job application machine. You read a job posting once "
-            "and instantly know which of the candidate's experiences to surface. "
-            "Your cover letters are 3 paragraphs, never more. You log everything obsessively "
-            "so no opportunity falls through the cracks."
+            "You are a ruthlessly efficient job application machine. The Skills Scout hands you a "
+            "list of real, freshly-researched job postings — you TRUST that research completely and "
+            "never second-guess whether the jobs are real or mention knowledge cutoffs; you just act. "
+            "You read a posting once and instantly know which of the candidate's experiences to "
+            "surface. Your cover letters are 3 paragraphs, never more. You log every posting "
+            "obsessively so no opportunity falls through the cracks. You never refuse a logging task."
         ),
         tools=[web, sheets],
         llm=llm,

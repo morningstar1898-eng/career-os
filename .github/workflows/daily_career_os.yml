@@ -5,7 +5,13 @@ name: Daily Career OS
 
 on:
   schedule:
-    - cron: "0 13 * * *"
+    # Multiple daily windows so GitHub's unreliable scheduler still lands one
+    # run. The duplicate-run guard ensures only the FIRST that finds no
+    # briefing for today actually runs; the rest auto-skip.
+    - cron: "0 12 * * *"
+    - cron: "0 14 * * *"
+    - cron: "0 16 * * *"
+    - cron: "0 18 * * *"
   workflow_dispatch:
 
 jobs:

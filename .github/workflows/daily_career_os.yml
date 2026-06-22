@@ -5,13 +5,16 @@ name: Daily Career OS
 
 on:
   schedule:
-    # Multiple daily windows so GitHub's unreliable scheduler still lands one
-    # run. The duplicate-run guard ensures only the FIRST that finds no
-    # briefing for today actually runs; the rest auto-skip.
-    - cron: "0 12 * * *"
-    - cron: "0 14 * * *"
-    - cron: "0 16 * * *"
-    - cron: "0 18 * * *"
+    # Many windows (off-peak minutes, clustered in the morning) so GitHub's
+    # unreliable scheduler lands one as early as possible. The duplicate-run
+    # guard ensures only the FIRST that finds no briefing today runs; rest skip.
+    - cron: "17 12 * * *"   # ~7:17a Central
+    - cron: "47 12 * * *"
+    - cron: "17 13 * * *"
+    - cron: "47 13 * * *"
+    - cron: "17 14 * * *"
+    - cron: "17 16 * * *"   # afternoon fallbacks
+    - cron: "17 18 * * *"
   workflow_dispatch:
 
 jobs:

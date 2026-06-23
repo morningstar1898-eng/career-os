@@ -4,6 +4,28 @@ import Link from "next/link";
 
 const CASE_STUDIES = [
   {
+    title: "Medicare Claims Data Warehouse",
+    subtitle: "Snowflake Cloud Warehouse — Star Schema, VARIANT (FHIR), Native CDC",
+    problem:
+      "Payers and providers sit on huge volumes of structured claims alongside deeply nested FHIR/JSON, arriving continuously. Traditional warehouses force a trade-off between performance and flexibility, require brittle pre-flattening of semi-structured data, and need heavy orchestration for incremental loads.",
+    approach: [
+      "Architected a layered RAW → STAGING → MARTS warehouse in Snowflake with compute separated from storage (dedicated load vs. analytics warehouses)",
+      "Modeled 500K+ Medicare claims into a star schema (fact_claims with provider and drug dimensions) for fast, intuitive analytics",
+      "Ingested semi-structured FHIR/JSON natively using VARIANT and path queries — eliminating a pre-flattening pipeline",
+      "Built a serverless change-data-capture pipeline with Streams + Tasks, plus clustering keys, zero-copy clones, and Time Travel",
+    ],
+    results: [
+      "500K+ claims modeled; ~$1.26B in paid amounts analyzed",
+      "Native CDC pipeline loads only new records — no full refresh, no external orchestrator",
+      "Date-clustered fact table prunes micro-partitions for fast filtered queries",
+      "Zero-copy clones provide instant, prod-size dev environments at no extra storage cost",
+    ],
+    tech: ["Snowflake", "SQL", "Star Schema", "VARIANT", "Streams & Tasks", "Clustering"],
+    metrics: { records: "500K+", paid: "$1.26B", features: "10" },
+    repo: "https://github.com/morningstar1898-eng/medicare-claims-warehouse-snowflake",
+    color: "#29B5E8",
+  },
+  {
     title: "Healthcare Fraud Risk Analytics",
     subtitle: "Anomaly Detection & Provider Risk Profiling",
     problem:

@@ -19,6 +19,12 @@ const PROJECTS = [
     repo: "https://github.com/morningstar1898-eng/career-os",
   },
   {
+    title: "Medicare Claims Data Warehouse (Snowflake)",
+    desc: "Cloud data warehouse on Snowflake: star-schema modeling of 500K+ claims, semi-structured FHIR via VARIANT, native CDC with Streams & Tasks, clustering, and zero-copy clones.",
+    tech: ["Snowflake", "SQL", "Star Schema", "Streams & Tasks"],
+    repo: "https://github.com/morningstar1898-eng/medicare-claims-warehouse-snowflake",
+  },
+  {
     title: "Healthcare Fraud Risk Analytics",
     desc: "End-to-end fraud detection pipeline using anomaly scoring and provider risk profiling on Medicare claims data.",
     tech: ["Python", "SQL", "Tableau"],

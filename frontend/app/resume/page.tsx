@@ -19,6 +19,12 @@ const PROJECTS = [
     repo: "https://github.com/morningstar1898-eng/career-os",
   },
   {
+    title: "Healthcare Data Pipeline (Azure)",
+    desc: "End-to-end medallion pipeline on Azure: raw claims landed in ADLS Gen2 (bronze), cleaned/typed via ADF Mapping Data Flows (silver), and aggregated into curated marts (gold); orchestrated bronze→silver→gold with a scheduled trigger and ADF Monitor.",
+    tech: ["Azure", "Data Factory", "ADLS Gen2", "Parquet"],
+    repo: "https://github.com/morningstar1898-eng/healthcare-data-pipeline-azure",
+  },
+  {
     title: "Medicare Claims Data Warehouse (Snowflake)",
     desc: "Cloud data warehouse on Snowflake: star-schema modeling of 500K+ claims, semi-structured FHIR via VARIANT, native CDC with Streams & Tasks, clustering, and zero-copy clones.",
     tech: ["Snowflake", "SQL", "Star Schema", "Streams & Tasks"],

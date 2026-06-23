@@ -4,6 +4,28 @@ import Link from "next/link";
 
 const CASE_STUDIES = [
   {
+    title: "Healthcare Data Pipeline on Azure",
+    subtitle: "Medallion Architecture — ADLS Gen2 + Azure Data Factory",
+    problem:
+      "Healthcare claims arrive continuously as raw, untyped files that aren't query-ready. Teams need a pipeline that safely lands raw data, transforms it into a clean and trustworthy layer, and produces business-facing aggregates — reliably, on a schedule, and with no servers to manage.",
+    approach: [
+      "Built a medallion data lake on ADLS Gen2 (hierarchical namespace) with bronze, silver, and gold zones",
+      "Authored an Azure Data Factory pipeline orchestrating two Mapping Data Flows on managed Spark",
+      "bronze→silver: cast and standardize raw CSV into typed, compressed Parquet; silver→gold: aggregate claims and paid amounts by provider",
+      "Chained the flows with a success dependency and a daily schedule trigger, with full run history in ADF Monitor",
+    ],
+    results: [
+      "End-to-end pipeline runs verified: raw CSV → typed Parquet (silver) → curated marts (gold)",
+      "Serverless transforms on managed Spark — no clusters to provision or babysit",
+      "Columnar Parquet shrank the dataset ~65% vs. raw CSV for faster, cheaper queries",
+      "Reproducible from source control — all ADF artifacts exported as JSON",
+    ],
+    tech: ["Azure", "Data Factory", "ADLS Gen2", "Mapping Data Flows", "Parquet", "Spark"],
+    metrics: { zones: "3", flows: "2", format: "Parquet" },
+    repo: "https://github.com/morningstar1898-eng/healthcare-data-pipeline-azure",
+    color: "#0078D4",
+  },
+  {
     title: "Medicare Claims Data Warehouse",
     subtitle: "Snowflake Cloud Warehouse — Star Schema, VARIANT (FHIR), Native CDC",
     problem:

@@ -26,17 +26,17 @@ TECHNICAL SKILLS
 ---
 EXPERIENCE
 Coding Quality Analyst / Senior Medical Coder | Optum, UnitedHealth Group | May 2019 - Present
-  - Analyze clinical, coding, claims, and reimbursement data to support coding quality, data validation, and payer review workflows
-  - Identify trends, anomalies, performance gaps, cost drivers, and data quality concerns across high-volume review work
-  - Perform root cause analysis on coding discrepancies and data inconsistencies, improving reporting accuracy and audit readiness
-  - Evaluate high-risk records for fraud, waste, abuse, documentation gaps, and risk adjustment concerns
-  - Develop Excel and PowerPoint reports summarizing findings, trends, and recommendations for stakeholders and leadership
-  - Maintain 95%+ coding accuracy while managing multiple datasets and production expectations
+  - Audit 500+ medical coding records monthly across HCC risk adjustment, CPT, ICD-10-CM, and HCPCS workflows, maintaining 95%+ accuracy and exceeding production benchmarks consistently
+  - Perform root cause analysis on coding discrepancies across high-volume claims datasets, identifying systematic patterns and driving process improvements that reduced resubmission rates
+  - Evaluate high-risk clinical documentation for fraud, waste, abuse, risk adjustment gaps, and HCC capture accuracy — directly supporting Optum's revenue integrity and quality reporting mandates
+  - Build Excel-based reporting tools and analytical dashboards to surface coding quality trends, anomalies, and cost drivers for leadership and payer review teams
+  - Validate production datasets for PHI compliance, data completeness, and coding accuracy across multiple concurrent payer review workflows with competing deadlines
+  - Collaborate with clinical, compliance, and data operations teams to translate coding quality findings into actionable recommendations and process documentation
 
 Coding Auditor / Risk Adjustment Coder | CorroHealth | July 2020 - June 2021
-  - Audited coding, production, reimbursement, and risk adjustment data to improve quality and compliance
-  - Promoted to auditor within 6 months, provided quality review guidance to a team of 20 coders
-  - Maintained 95%+ accuracy while exceeding productivity benchmarks
+  - Promoted to auditor within 6 months based on coding accuracy and analytical output; provided quality review and production guidance to a team of 20 coders
+  - Audited risk adjustment and reimbursement data for compliance, HCC capture accuracy, and denial risk — sustaining 95%+ accuracy while exceeding throughput targets
+  - Developed audit feedback documentation used by coder team to reduce repeat errors across common ICD-10 and HCC misassignment patterns
 
 Healthcare Documentation Analyst, ACA Program | Cognosante | January 2019 - May 2019
   - Reviewed and validated healthcare documentation datasets for accuracy, completeness, and compliance

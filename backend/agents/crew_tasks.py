@@ -13,13 +13,17 @@ JOBS_PER_DAY = int(os.getenv("JOBS_PER_DAY", "10"))
 FULL_APPLICATIONS = min(int(os.getenv("FULL_APPLICATIONS", "5")), JOBS_PER_DAY)
 SALARY_TARGET = os.getenv("SALARY_TARGET", "$120,000-$150,000+")
 
-# AI/tech companies that are always explicitly searched — regardless of TARGET_COMPANIES secret.
+# AI/tech companies always searched — regardless of TARGET_COMPANIES secret.
 AI_TECH_COMPANIES = [
     "Anthropic", "OpenAI", "Google DeepMind", "Google Cloud", "Microsoft",
     "Meta AI", "Amazon AWS", "Databricks", "Snowflake", "dbt Labs",
 ]
+# Internal employer — candidate is a current Optum/UHG employee. These are searched
+# via the internal careers site (careers.unitedhealthgroup.com) in addition to LinkedIn.
+INTERNAL_COMPANIES = ["Optum", "UnitedHealth Group", "OptumInsight", "Optum Health"]
+
 _extra = os.getenv("TARGET_COMPANIES", "")
-_all_companies = AI_TECH_COMPANIES + [c.strip() for c in _extra.split(",") if c.strip()]
+_all_companies = INTERNAL_COMPANIES + AI_TECH_COMPANIES + [c.strip() for c in _extra.split(",") if c.strip()]
 COMPANIES_LIST = ", ".join(_all_companies)
 
 def build_tasks(agents: dict) -> list:
@@ -27,32 +31,36 @@ def build_tasks(agents: dict) -> list:
     # ── Task 1: Scan job market ────────────────────────────
     task_scan = Task(
         description=(
-            f"Today is {TODAY}. Search LinkedIn, Indeed, Glassdoor, and each company's careers page "
-            f"for {ROLES} job postings (Data Analyst, Analytics Engineer, Data Engineer, "
-            "ML Engineer, AI Engineer, BI Engineer).\n\n"
-            f"PRIORITY COMPANIES — always search these specifically: {COMPANIES_LIST}. "
-            "Include AI/ML data roles, developer relations, data science, and any "
-            "data-platform or analytics-engineering openings at those companies. "
-            f"At minimum 3 of the top {JOBS_PER_DAY} results should be from this priority list when open.\n\n"
-            f"Find at least {JOBS_PER_DAY + 5} current postings total. "
-            f"Prioritize roles paying {SALARY_TARGET} (senior/mid-senior). "
-            "For each posting, extract required technical skills. Tally across all postings. Output:\n"
-            "(A) Top 10 skills ranked by frequency across all postings.\n"
-            "(B) The 5 most critical skill gaps for the candidate to reach those salary bands.\n"
-            f"(C) The top {JOBS_PER_DAY} postings as a numbered list, each with: "
-            "Company | Role Title | URL | Salary (if listed) | Top 3 Required Skills.\n\n"
-            "REQUIRED FINAL STEP — LOG TO SHEETS: After producing section (C), call the "
-            "log_to_sheets tool exactly once with a JSON array of all postings. Each item: "
-            "{\"company\": ..., \"role\": ..., \"url\": ..., \"status\": \"Applied\", "
+            f"Today is {TODAY}. Search for {ROLES} job postings "
+            "(Data Analyst, Analytics Engineer, Data Engineer, ML Engineer, AI Engineer, BI Engineer).\n\n"
+            "SEARCH SOURCES — use all of these:\n"
+            "  • careers.unitedhealthgroup.com — MUST search this directly for Optum/UHG internal roles. "
+            "    Search 'data analyst', 'data engineer', 'analytics engineer', 'business intelligence'. "
+            "    The candidate is a CURRENT OPTUM EMPLOYEE so internal postings are the highest priority.\n"
+            "  • LinkedIn, Indeed, Glassdoor — for external roles\n"
+            "  • Direct careers pages for: Anthropic (anthropic.com/careers), OpenAI (openai.com/careers), "
+            "    Google (careers.google.com), Microsoft (careers.microsoft.com), Databricks, Snowflake\n\n"
+            f"PRIORITY ORDER for the top {JOBS_PER_DAY} list:\n"
+            "  1. Optum/UHG INTERNAL roles (careers.unitedhealthgroup.com) — aim for at least 3\n"
+            "  2. AI/tech companies (Anthropic, OpenAI, Google, Microsoft, Databricks) — aim for 3-4\n"
+            "  3. Best-fit external healthcare/data roles — remaining slots\n\n"
+            f"Prioritize {SALARY_TARGET} (senior/mid-senior). "
+            "For each posting extract required technical skills. Tally across all postings. Output:\n"
+            "(A) Top 10 skills ranked by frequency.\n"
+            "(B) The 5 most critical skill gaps.\n"
+            f"(C) Top {JOBS_PER_DAY} postings as a numbered list — Company | Role | URL | Salary | "
+            "Top 3 Required Skills | Internal? (yes/no).\n\n"
+            "REQUIRED FINAL STEP — LOG TO SHEETS: Call log_to_sheets once with a JSON array. "
+            "Each item: {\"company\": ..., \"role\": ..., \"url\": ..., \"status\": \"Applied\", "
             "\"date_applied\": \"" + datetime.now().strftime("%Y-%m-%d") + "\", "
-            "\"notes\": \"<salary> | <top required skill>\"}. "
-            "These are real postings you just found — log them all in one call. "
-            "Do not finish the task until you see the '✅ Logged N application(s)' confirmation."
+            "\"notes\": \"INTERNAL | <salary> | <top skill>\" for Optum/UHG roles, "
+            "else \"<salary> | <top skill>\"}. "
+            "Do not finish until you see the '✅ Logged N application(s)' confirmation."
         ),
         expected_output=(
             f"(A) Top 10 skill frequencies, (B) 5 skill gaps, "
-            f"(C) numbered list of top {JOBS_PER_DAY} postings with company/role/URL/salary/skills, "
-            "AND confirmation that all postings were logged to Google Sheets."
+            f"(C) numbered list of top {JOBS_PER_DAY} postings with internal/external flag, "
+            "AND Sheets logging confirmation."
         ),
         agent=agents["skills_scout"],
     )
@@ -142,29 +150,52 @@ def build_tasks(agents: dict) -> list:
     task_apply = Task(
         description=(
             f"Today is {TODAY}. Using the job postings list produced in Task 1, write tailored "
-            f"application materials for the {FULL_APPLICATIONS} best-fit / highest-paying roles "
-            f"(prioritize {SALARY_TARGET} and AI/tech companies: {', '.join(AI_TECH_COMPANIES[:5])}).\n\n"
-            "FOR EACH ROLE, do these three things:\n"
-            "1. MIRROR THE JOB POSTING: Pull the exact required skills and keywords from the posting. "
-            "List which ones match the candidate's background and which are growth areas.\n"
-            "2. TAILORED RESUME BULLETS (3): Each bullet must start with a strong action verb, "
-            "quantify impact where possible (%, $, scale), and use the exact keywords/tools from "
-            "that specific posting. Draw from: 5+ years at Optum/UHG (coding quality, claims "
-            "analytics, HCC risk adjustment, 95%+ accuracy, auditing team of 20), CorroHealth, "
-            "the Career OS AI system project, the MedCoding AI product, and the Healthcare Fraud "
-            "Risk and Revenue Integrity portfolio projects.\n"
-            "3. COVER LETTER (3 paragraphs, under 200 words): Para 1 — why THIS company/role "
-            "specifically (reference what makes them unique); Para 2 — the single strongest "
-            "experience match using STAR structure; Para 3 — one sentence on fit + call to action. "
-            "For AI companies, lead with the Career OS and MedCoding AI projects.\n\n"
-            "Do NOT fabricate experience or invent tools she hasn't used. "
-            "For stretch roles (AI research, ML engineering), be honest about growth areas and "
-            "frame the healthcare + automation background as the differentiator."
+            f"application materials for the {FULL_APPLICATIONS} best-fit roles. "
+            "PRIORITIZE in this order: (1) Optum/UHG internal roles, (2) AI/tech company roles, "
+            "(3) best-fit external roles.\n\n"
+            "═══════════════════════════════════════════════════════════\n"
+            "OPTUM/UHG INTERNAL ROLES — completely different strategy:\n"
+            "═══════════════════════════════════════════════════════════\n"
+            "The candidate is a CURRENT OPTUM EMPLOYEE. Internal transfer applications "
+            "have a fundamentally different goal: prove she's the obvious internal choice.\n\n"
+            "1. INTERNAL KEYWORD MATCH: Identify the exact skills/tools in the Optum JD. "
+            "Note which ones she already uses in her current Optum role (strongest signal) vs. "
+            "skills she has built independently (strong) vs. growth areas (honest).\n\n"
+            "2. INTERNAL RESUME BULLETS (3): Mirror the JD's exact language. Lead every bullet "
+            "with a metric or outcome from her current Optum work. Examples of strong framing:\n"
+            "   - 'Analyzed 500+ monthly coding audits across HCC and risk adjustment workflows, "
+            "     producing the same type of claims-quality reporting this role requires'\n"
+            "   - 'Validated production datasets for PHI compliance and coding accuracy across "
+            "     payer review workflows — directly aligned with [team]'s data quality mandate'\n"
+            "   Each bullet should end with a bridge: 'directly applicable to [role/team]'.\n\n"
+            "3. INTERNAL COVER LETTER (3 paragraphs, under 180 words):\n"
+            "   Para 1: 'As a current Optum [title] since May 2019, I'm applying for [role] "
+            "   because [specific reason this team/work excites her].' Skip company overview.\n"
+            "   Para 2: Name ONE specific Optum initiative, platform, or data challenge this "
+            "   team owns, and connect her existing work directly to it. STAR: what she did, "
+            "   the data/tools involved, the outcome in Optum terms.\n"
+            "   Para 3: 'I'm ready to bring [her technical growth — Azure/Snowflake/Python] "
+            "   to complement my deep knowledge of [Optum's claims/HCC/quality systems].' "
+            "   One-line ask.\n\n"
+            "═══════════════════════════════════════════════════════════\n"
+            "ALL OTHER ROLES — standard tailored strategy:\n"
+            "═══════════════════════════════════════════════════════════\n"
+            "1. KEYWORD MATCH: Extract required skills from the JD, rate each as match/partial/gap.\n"
+            "2. RESUME BULLETS (3): Action verb + metric + exact JD keywords. Draw from: "
+            "5+ years at Optum/UHG (coding quality, claims analytics, HCC risk adjustment, "
+            "95%+ accuracy, auditing 20-person team), Career OS AI system, MedCoding AI product, "
+            "Healthcare Fraud Risk and Revenue Integrity portfolio projects.\n"
+            "3. COVER LETTER (3 paragraphs, under 200 words): Para 1 — company-specific hook "
+            "(why THIS company, not just any data role). Para 2 — strongest STAR match. "
+            "Para 3 — fit + call to action. For AI companies, lead Para 1 with Career OS/MedCoding AI.\n\n"
+            "Do NOT fabricate experience. For stretch roles, frame growth areas honestly."
         ),
         expected_output=(
-            f"For each of the top {FULL_APPLICATIONS} roles: a keyword match analysis, "
-            "3 tailored resume bullets mirroring the posting's language, "
-            "and a 3-paragraph cover letter under 200 words."
+            f"For each of the top {FULL_APPLICATIONS} roles:\n"
+            "- Label: INTERNAL (Optum/UHG) or EXTERNAL\n"
+            "- Keyword match analysis (match / partial / gap per required skill)\n"
+            "- 3 tailored resume bullets using the posting's exact language\n"
+            "- Cover letter using the appropriate strategy (internal or external)"
         ),
         agent=agents["job_applicant"],
         context=[task_scan],

@@ -7,6 +7,7 @@ from crewai import Agent, LLM
 from tools.shared_tools import WebSearchTool, NotionWriterTool, SheetsLoggerTool, AzureBlobTool
 
 AI_COMPANIES = "Anthropic, OpenAI, Google DeepMind, Google Cloud, Microsoft, Meta AI, Databricks, Snowflake"
+INTERNAL_COMPANIES = "Optum, UnitedHealth Group, UHG"  # candidate is a current employee — internal transfers are priority
 
 def get_llm():
     """Fast/cheap model for search, logging, orchestration tasks."""
@@ -156,17 +157,37 @@ def build_agents():
             f"For each role in today's top job postings, write HIGHLY TAILORED application "
             "materials by mirroring the exact keywords and requirements from the posting. "
             "Draw exclusively from the candidate's real background (resume below). "
-            "Lead with the AI/automation projects (Career OS, MedCoding AI) when applying to "
-            f"AI companies ({AI_COMPANIES}). "
+            f"INTERNAL TRANSFER PRIORITY: The candidate is a CURRENT OPTUM/UHG EMPLOYEE. "
+            "When any role is at Optum, UnitedHealth Group, or Optum Health, treat it as an "
+            "internal transfer — use a completely different strategy (see backstory). "
+            "For external AI/tech companies, lead with the Career OS and MedCoding AI projects. "
             "Never fabricate experience; frame growth areas honestly."
         ),
         backstory=(
             "You are a ruthlessly efficient job application specialist who treats every "
-            "application as a keyword-matching exercise AND a human story. You read a posting "
-            "once and instantly know which of the candidate's experiences to surface — and which "
-            "exact words to mirror back so ATS systems and recruiters both say yes. "
-            "You write cover letters that open with a company-specific hook, not a generic greeting. "
-            "You never second-guess whether postings are real — you just apply.\n\n"
+            "application as a keyword-matching exercise AND a human story.\n\n"
+            "INTERNAL OPTUM/UHG TRANSFERS — SPECIAL RULES:\n"
+            "The candidate is a current Optum employee (Coding Quality Analyst / Senior Medical Coder, "
+            "May 2019–present). For any internal Optum/UHG role, you apply a completely different "
+            "strategy than for external applications:\n"
+            "  1. COVER LETTER opens with: 'As a current Optum employee on the [current team], I am "
+            "     applying for [role] because...' — no need to explain the company.\n"
+            "  2. Lead with INTERNAL IMPACT: cite specific programs, platforms, or workflows she "
+            "     has touched at Optum (HCC risk adjustment, coding quality audits, production "
+            "     metrics, payer review workflows, data validation). Quantify everything possible.\n"
+            "  3. CONNECT THE DOTS internally: show how her current Optum work directly feeds the "
+            "     team she is applying to join. What data does she already use that they own? "
+            "     What processes does she already understand that they need?\n"
+            "  4. Use UHG/Optum language: 'advancing the health system,' data platforms (Optum "
+            "     Analytics, OptumInsight, UHG Data & Analytics), the candidate's familiarity "
+            "     with PHI/HIPAA data governance, and internal terminology over generic terms.\n"
+            "  5. RESUME BULLETS for Optum roles: reframe her current duties as the FOUNDATION "
+            "     the new role needs — not just 'I did X' but 'This prepared me to do Y for your team.'\n"
+            "  6. Cover letter Para 2 should name a specific internal initiative or data challenge "
+            "     at Optum that she wants to help solve.\n\n"
+            "For external roles: read a posting once and instantly know which experiences to surface "
+            "and which exact words to mirror so ATS systems and recruiters both say yes. "
+            "Write cover letters that open with a company-specific hook, not a generic greeting.\n\n"
             f"CANDIDATE RESUME:\n{resume_text}"
         ),
         tools=[web, sheets],

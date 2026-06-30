@@ -16,11 +16,12 @@ BS, Biochemistry — Oklahoma Baptist University, 2013
 
 ---
 TECHNICAL SKILLS
-  Data Tools: Excel (advanced), SQL, PostgreSQL, Tableau, Power BI (learning)
-  Programming: Python (pandas, matplotlib, Jupyter Notebook)
-  Cloud: Azure (free tier), Tableau Cloud
-  Healthcare: CPT, HCPCS, ICD-10-CM, Claims Analysis, Risk Adjustment / HCC, Revenue Integrity
-  Other: Google Sheets, Notion, Root Cause Analysis, Data Validation, Stakeholder Reporting
+  Data & Analytics: SQL, PostgreSQL, Python (pandas, numpy, matplotlib, scikit-learn), Excel (advanced, Power Query), Tableau, Power BI (DAX, semantic models, RLS, Report Builder)
+  Data Engineering: dbt (models, tests, incremental), Azure Data Factory (watermark/CDC incremental loads), Azure Synapse Analytics, Azure Data Lake Storage Gen2, Snowflake (clustering keys, query optimization, schema design)
+  Cloud & Infrastructure: Azure (ADF, Synapse, ADLS, Blob Storage), GitHub Actions (CI/CD, cron workflows), Docker (basic)
+  AI / Automation: Anthropic Claude API, Python AI agent frameworks (CrewAI), LLM-powered workflow automation, FastAPI
+  Healthcare Domain: CPT, HCPCS, ICD-10-CM, HCC / Risk Adjustment, Revenue Integrity, Claims Analysis, Fraud/Waste/Abuse Detection
+  Other: Notion API, Google Sheets API, Root Cause Analysis, Data Validation, Stakeholder Reporting
 
 ---
 EXPERIENCE
@@ -41,16 +42,25 @@ Healthcare Documentation Analyst, ACA Program | Cognosante | January 2019 - May 
   - Reviewed and validated healthcare documentation datasets for accuracy, completeness, and compliance
   - Identified data discrepancies, initiated corrective actions, and generated compliance reports
 
-Veterinary Technician | Hergenrether Animal Hospital | July 2016 - January 2019
-  - Maintained accurate medical records and supported clinical operations and workflow coordination
-
 ---
 PROJECTS
-Healthcare Fraud Risk Monitoring Dashboard | 2024-2025
+Career OS — 6-Agent AI Job Search Automation System | 2025–2026
+  - Designed and deployed a multi-agent AI pipeline (Python, CrewAI, Anthropic Claude API) that runs daily via GitHub Actions CI/CD
+  - Agents search job postings, identify skill gaps, generate tailored application materials, create daily lessons, and compile briefings
+  - Backend: Azure App Service (FastAPI), Azure SQL, Azure Blob Storage; frontend: Next.js on Vercel; briefings to Notion + Gmail
+  - System runs fully autonomously, logging 10+ job applications/day to Google Sheets with zero manual intervention
+
+MedCoding AI — AI-Powered Medical Coding Audit Tool | 2026
+  - Building a services-first SaaS product that performs second-pass audits of medical coding submissions using LLMs
+  - Designed the core review engine: ingests ICD-10/CPT/HCC codes, cross-references clinical documentation, flags upcoding/undercoding
+  - Stack: Python, FastAPI, Anthropic Claude API; target users: coding managers and RCM teams at health systems
+
+Healthcare Fraud Risk Monitoring Dashboard | 2024–2025
   - Analyzed 10,000 healthcare claims across 20 fields to identify fraud-risk patterns using PostgreSQL, Python, and Tableau Cloud
   - Built segmentation logic showing 8.29% overall fraud rate, with rejected/pending claims above 22% vs 2.17% for approved
+  - Published as a portfolio case study with end-to-end methodology from raw data to executive-ready dashboard
 
-Healthcare Revenue Integrity Analytics Platform | 2024-2025
+Healthcare Revenue Integrity Analytics Platform | 2024–2025
   - Built end-to-end analytics using CMS Medicare provider data to evaluate reimbursement variation, HCPCS utilization, and provider outlier risk
   - Used Python/pandas to clean and structure data, loaded into SQL for repeatable analysis and dashboard-ready reporting
 
@@ -59,7 +69,8 @@ CERTIFICATIONS
   - Certified Professional Coder (CPC)
   - Certified Risk Adjustment Coder (CRC)
   - Certified Coding Associate (CCA)
+  - Microsoft DP-600 Fabric Analytics Engineer (in progress, target Aug 2026)
 
 ---
 ABOUT
-Healthcare analyst and coding quality professional with 5+ years of experience analyzing clinical, coding, claims, risk adjustment, and reimbursement data. Combines MBA training in Finance & Data Analytics with CPC, CRC, CCA credentials and hands-on SQL, Python, Excel, Tableau, and PostgreSQL skills. Actively building a data analytics portfolio and transitioning into Data Analyst / BI Analyst roles.
+Healthcare analyst and data engineer with 5+ years at Optum/UHG, an MBA in Finance & Data Analytics, and a track record of building automated data systems. Combines deep healthcare domain expertise (ICD-10, HCC, revenue integrity, fraud detection) with modern cloud and AI engineering skills — Snowflake, Azure Data Factory, dbt, Python, and Anthropic Claude API. Built and runs a fully autonomous 6-agent AI system for job search automation. Actively transitioning into Data Engineer / Analytics Engineer / AI Data roles at companies building with AI.

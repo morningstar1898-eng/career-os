@@ -76,7 +76,7 @@ jobs:
           TARGET_ROLES=${{ secrets.TARGET_ROLES }}
           TARGET_CITIES=${{ secrets.TARGET_CITIES }}
           TARGET_COMPANIES=${{ secrets.TARGET_COMPANIES }}
-          JOBS_PER_DAY=20
+          JOBS_PER_DAY=10
           DEGREE=${{ secrets.DEGREE }}
           SKILLS_CURRENT=${{ secrets.SKILLS_CURRENT }}
           EOF
@@ -105,9 +105,11 @@ jobs:
         run: |
           python3 clean_briefing.py > clean_output.txt
           OUTPUT=$(python3 -c "import json; print(json.dumps(open('clean_output.txt', encoding='utf-8').read()))")
+          # Count "Logged N application(s)" lines to report actual jobs applied
+          JOBS_APPLIED=$(grep -oP 'Logged \K[0-9]+(?= application)' crew_output.txt | awk '{s+=$1} END {print s+0}')
           curl -s -X POST "${{ secrets.API_URL }}/ingest/crew-result" \
             -H "Content-Type: application/json" \
-            -d "{\"secret\": \"${{ secrets.INGEST_SECRET }}\", \"crew_output\": $OUTPUT, \"jobs_applied\": 10, \"skills_gap_count\": 3, \"portfolio_items\": 2}"
+            -d "{\"secret\": \"${{ secrets.INGEST_SECRET }}\", \"crew_output\": $OUTPUT, \"jobs_applied\": ${JOBS_APPLIED:-0}, \"skills_gap_count\": 3, \"portfolio_items\": 2}"
 
       - name: Send email briefing
         if: success() && steps.guard.outputs.skip == 'false'

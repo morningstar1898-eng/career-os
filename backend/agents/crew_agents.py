@@ -9,11 +9,21 @@ from tools.shared_tools import WebSearchTool, NotionWriterTool, SheetsLoggerTool
 AI_COMPANIES = "Anthropic, OpenAI, Google DeepMind, Google Cloud, Microsoft, Meta AI, Databricks, Snowflake"
 
 def get_llm():
+    """Fast/cheap model for search, logging, orchestration tasks."""
     return LLM(
         model="anthropic/claude-haiku-4-5-20251001",
         api_key=os.getenv("ANTHROPIC_API_KEY"),
         max_tokens=4096,
         temperature=0.3,
+    )
+
+def get_tutor_llm():
+    """Higher-quality model for the tutor — deep lessons need depth, not speed."""
+    return LLM(
+        model="anthropic/claude-sonnet-4-6",
+        api_key=os.getenv("ANTHROPIC_API_KEY"),
+        max_tokens=8096,
+        temperature=0.4,
     )
 
 def build_agents():
@@ -86,6 +96,23 @@ def build_agents():
         max_iter=8,
     )
 
+    # Load lesson history so the tutor doesn't repeat recent topics
+    lesson_history_path = os.getenv("LESSON_HISTORY_PATH", "lesson_history.txt")
+    try:
+        with open(lesson_history_path, "r", encoding="utf-8") as f:
+            raw_history = [
+                line.strip() for line in f
+                if line.strip() and not line.startswith("#")
+            ]
+        # Keep last 14 entries — enough to cover a 2-week rotation
+        recent_topics = raw_history[-14:] if raw_history else []
+        history_str = (
+            "TOPICS ALREADY COVERED (do NOT repeat these):\n" +
+            "\n".join(f"  - {t}" for t in recent_topics)
+        ) if recent_topics else "No prior lesson history — this is the first run."
+    except FileNotFoundError:
+        history_str = "No prior lesson history — this is the first run."
+
     # ── Agent 3: Tutor ────────────────────────────────────
     tutor = Agent(
         role="Career Skills Tutor",
@@ -93,22 +120,30 @@ def build_agents():
             f"Design a comprehensive, actionable DAILY LESSON for {name} (who has a {degree}) "
             "that builds toward senior $120k-$150k+ Data/Analytics/ML/AI Engineering roles — "
             f"especially at AI-first companies ({AI_COMPANIES}). "
-            "Rotate topics to cover the WHOLE target stack over time: SQL, Python, Power BI, "
-            "Snowflake, dbt, Azure, Databricks, ML, and LLM/AI engineering. "
-            "Each lesson: timeboxed agenda, step-by-step how-to with commented code, "
-            "practice exercise + solution, AND five interview questions at senior depth. "
-            "Tone: direct, zero fluff, fully do-able without extra research."
+            "Rotate across the WHOLE target stack without repeating recent topics: "
+            "SQL, Python, Power BI, Snowflake, dbt, Azure, Databricks, ML, LLM/AI engineering. "
+            "Each lesson must be GENUINELY DEEP — not a surface overview. Include real working "
+            "code with line-by-line comments, a hands-on exercise with a full worked solution, "
+            "and five interview questions answered at senior depth with the specific gotcha "
+            "interviewers at top companies probe for. Tone: direct, zero fluff.\n\n"
+            f"{history_str}"
         ),
         backstory=(
-            "You are the best tech instructor nobody has heard of. You can explain SQL joins, "
-            "Azure architecture, Python data wrangling, or how to call an LLM API to a "
-            "practitioner and have them actually retain it. You hate filler. You love analogies, "
-            "worked examples, and step-by-step how-tos that someone can follow hands-on today. "
-            "You also drill interview answers — you know the exact questions hiring managers at "
-            "Anthropic, Google, and Microsoft ask and how a strong candidate answers them with depth."
+            "You are an expert technical instructor and senior engineering mentor. "
+            "You've coached candidates into $150k+ roles at Google, Microsoft, and Databricks. "
+            "You never give surface-level overviews — every lesson you write could be a paid "
+            "course module. Your code examples are complete, runnable, and commented at the "
+            "level a junior engineer needs to understand WHY, not just what. "
+            "Your interview Q&As go three levels deep: (1) the textbook answer, (2) the real-world "
+            "nuance that separates a mid-level from a senior answer, (3) the gotcha the interviewer "
+            "is actually probing for. You know the candidate's background cold — she has 5+ years "
+            "in healthcare coding/analytics at Optum, an MBA in data analytics, and is building "
+            "toward AI/data engineering roles. You tie every lesson to her domain: healthcare claims, "
+            "HCC coding, revenue integrity. A SQL window function lesson uses claims data. "
+            "A Snowflake lesson uses a provider fraud scenario. Real context, every time."
         ),
         tools=[web],
-        llm=llm,
+        llm=get_tutor_llm(),
         verbose=True,
         allow_delegation=False,
         max_iter=10,

@@ -28,6 +28,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # Need write access so we can push lesson_history.txt back after run
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # Skip a scheduled run if today's briefing already exists (e.g. a manual
       # trigger already ran). Manual dispatches always run (never skipped).
@@ -79,6 +82,7 @@ jobs:
           JOBS_PER_DAY=10
           DEGREE=${{ secrets.DEGREE }}
           SKILLS_CURRENT=${{ secrets.SKILLS_CURRENT }}
+          LESSON_HISTORY_PATH=lesson_history.txt
           EOF
           sed -i 's/^[[:space:]]*//' .env
           sed -i 's/\xEF\xBB\xBF//g' .env
@@ -118,3 +122,30 @@ jobs:
           curl -s -X POST "${{ secrets.API_URL }}/email/briefing" \
             -H "Content-Type: application/json" \
             -d '{"secret": "${{ secrets.INGEST_SECRET }}", "to": "${{ secrets.EMAIL_TO }}"}'
+
+      # ── Feedback loop: commit today's lesson topic back to the repo ──────────
+      # The tutor reads lesson_history.txt at the start of the NEXT run so it
+      # never repeats a topic covered in the past 14 days.
+      - name: Update lesson history
+        if: success() && steps.guard.outputs.skip == 'false'
+        continue-on-error: true
+        run: |
+          # Extract the lesson topic from the crew output (## Today's Focus line)
+          TOPIC=$(grep -m1 "## Today's Focus" crew_output.txt | sed 's/## Today'\''s Focus[: ]*//' | tr -d '\r' | head -c 120)
+          # Fall back to the first non-empty lesson heading if the exact marker isn't found
+          if [ -z "$TOPIC" ]; then
+            TOPIC=$(grep -m1 "Today.*Focus\|Today.*Lesson\|Topic:" crew_output.txt | head -c 120)
+          fi
+          if [ -n "$TOPIC" ]; then
+            echo "$(date +%Y-%m-%d) | $TOPIC" >> lesson_history.txt
+            # Keep only the last 60 entries so the file stays small
+            tail -n 60 lesson_history.txt > lesson_history.tmp && mv lesson_history.tmp lesson_history.txt
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git config user.name "Career OS Bot"
+            git add lesson_history.txt
+            git diff --cached --quiet || git commit -m "lesson-history: $(date +%Y-%m-%d)"
+            git push
+            echo "Lesson history updated: $TOPIC"
+          else
+            echo "Could not extract lesson topic — history not updated."
+          fi

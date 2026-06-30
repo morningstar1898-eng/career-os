@@ -4,26 +4,46 @@
 # Update this file whenever you change your LinkedIn manually.
 
 ## CURRENT HEADLINE
-Healthcare Analyst | Medical Coding Quality | Data Analytics | SQL | Python | MBA
+Data Analyst → AI Builder | I automate real data & healthcare work with AI — then teach it | Built a 6-agent system that runs my own job search | Python · SQL · Snowflake · Azure · LLMs
 
 ## CURRENT ABOUT (copy/paste from LinkedIn "About" section)
-Experienced healthcare analyst with 5+ years at Optum/UHG specializing in
-medical coding quality, HCC risk adjustment, and revenue integrity. MBA in
-Data Analytics. Currently building AI-powered data tools and expanding into
-data engineering, analytics engineering, and ML roles at the intersection of
-healthcare and AI. Proficient in SQL, Python, Power BI, Snowflake, Azure, and dbt.
+Most people talk about AI. I build it.
 
-## CURRENT SKILLS (top 10 as listed on LinkedIn)
+A healthcare data analyst who got tired of waiting for "someday" — so I started shipping. In the past few months I've built and deployed:
+→ A 6-agent autonomous AI system (CrewAI + FastAPI on Azure) that runs my entire job search — scouting roles, drafting tailored materials, and running a daily skills tutor — fully automated on a cloud cron.
+→ A Snowflake medical-claims warehouse (star schema, 500K+ rows, Streams/Tasks CDC, Time Travel).
+→ An Azure medallion pipeline (ADLS Gen2 + Data Factory, bronze → silver → gold).
+
+I also teach what I build — courses taking analysts from "I use SQL" to "I ship AI-powered data products."
+
+I turn messy healthcare claims data into decisions executives can act on.
+
+Over 5+ years at Optum / UnitedHealth Group, I've specialized in claims analytics, revenue integrity, risk adjustment, and provider performance — the work that protects margin and surfaces where revenue is quietly leaking. As a certified coder (CPC, CRC), I understand the data at the source: how charges, codes, and risk scores are actually created before they ever reach a dashboard.
+
+A few results I'm proud of:
+• Identified $2M+ in annual revenue leakage by building charge-to-payment variance models across 500+ provider contracts — leading to renegotiation of 12 underpaying payer agreements.
+• Cut claim denial rates by 18% through root-cause analysis of 50K+ denied claims and automated pre-submission flagging.
+• Built 15+ executive Tableau dashboards monitoring $200M+ in annual claims volume for C-suite and VP stakeholders.
+• Automated weekly reporting with Python + SQL, cutting cycle time from 8 hours to 45 minutes.
+
+I'm now focused on Senior Data Analyst and Analytics Engineer roles where I can own the full pipeline — from SQL modeling and dbt transformations through to the dashboards and statistical models that drive the decision.
+
+My toolkit: SQL (PostgreSQL, SQL Server) · Python (pandas, NumPy, SciPy) · dbt · Tableau & Power BI · data warehousing & ETL · Azure · Git.
+
+I keep a public portfolio of end-to-end projects — fraud risk scoring, revenue integrity, claims efficiency, provider scorecards, and a dbt warehouse — each with code, SQL, and interactive dashboards. Links in Featured below.
+
+MBA, Finance & Data Analytics · CPC, CRC certified. Based in Lawton, OK — open to remote.
+
+Let's connect if you're working on healthcare data, analytics engineering, or revenue-cycle problems.
+
+morningstar1898@gmail.com
+
+## CURRENT SKILLS (top skills as listed on LinkedIn)
 1. SQL
-2. Python
-3. Medical Coding
-4. HCC Risk Adjustment
-5. Power BI
-6. Data Analysis
-7. Healthcare Analytics
-8. Microsoft Excel
-9. Data Visualization
-10. Process Improvement
+2. Tableau
+3. Python (Programming Language)
+4. PostgreSQL
+5. Pandas (Software)
 
 ## TARGET ROLES (for keyword gap analysis)
 Data Analyst, Analytics Engineer, Data Engineer, ML Engineer, AI Engineer,
@@ -38,3 +58,6 @@ Optum, UnitedHealth Group, Anthropic, OpenAI, Google, Microsoft, Databricks, Sno
 - DP-600 Fabric Analytics Engineer cert in progress (target Aug 2026) — add when passed
 - Career OS and MedCoding AI are safe to mention publicly as personal projects
 - "Healthcare + AI" positioning is the differentiator — lead with it
+- Skills notably absent from LinkedIn that are on the resume: dbt, Power BI, Azure Data Factory,
+  Azure Synapse, Snowflake, Azure (ADLS Gen2), GitHub Actions, FastAPI, scikit-learn
+  — optimizer should recommend adding these

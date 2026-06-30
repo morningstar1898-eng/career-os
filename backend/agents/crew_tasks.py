@@ -188,11 +188,16 @@ def build_tasks(agents: dict) -> list:
             "3. COVER LETTER (3 paragraphs, under 200 words): Para 1 — company-specific hook "
             "(why THIS company, not just any data role). Para 2 — strongest STAR match. "
             "Para 3 — fit + call to action. For AI companies, lead Para 1 with Career OS/MedCoding AI.\n\n"
-            "Do NOT fabricate experience. For stretch roles, frame growth areas honestly."
+            "Do NOT fabricate experience. For stretch roles, frame growth areas honestly.\n\n"
+            "FINAL STEP — ATS SCORE: After writing materials for each role, add a one-line "
+            "ATS summary: 'ATS Match: XX% — Keywords hit: [list] — Missing: [list]'. "
+            "Count keyword hits by comparing your bullets + cover letter against the JD's "
+            "required skills. This tells the candidate which applications are strong before she sends them."
         ),
         expected_output=(
             f"For each of the top {FULL_APPLICATIONS} roles:\n"
             "- Label: INTERNAL (Optum/UHG) or EXTERNAL\n"
+            "- ATS Match score (%) with keywords hit and missing\n"
             "- Keyword match analysis (match / partial / gap per required skill)\n"
             "- 3 tailored resume bullets using the posting's exact language\n"
             "- Cover letter using the appropriate strategy (internal or external)"
@@ -202,36 +207,50 @@ def build_tasks(agents: dict) -> list:
     )
 
     # ── Task 5: Interview prep ─────────────────────────────
+    # Read weak category signal passed in from workflow (populated by the pre-run
+    # step that queries /interview/history from the Azure backend).
+    weak_category = os.getenv("WEAK_INTERVIEW_CATEGORY", "")
+    weak_signal = (
+        f"\n\nPRIORITY: Recent practice data shows the candidate scores LOWEST on "
+        f"'{weak_category}' questions. Weight your 10 questions toward that category — "
+        f"use 3 of the 10 slots for '{weak_category}' instead of 2."
+    ) if weak_category else ""
+
     task_interview = Task(
         description=(
             f"Today is {TODAY}. Using the top job postings and skill gaps from Task 1, "
-            f"generate a daily interview prep session for {NAME}. "
+            f"generate a daily interview prep session for {NAME}.\n\n"
+            "STEP 0 — SOURCE REAL COMPANY QUESTIONS FIRST:\n"
+            "For each of the top 1-2 companies in today's job list, search for their actual "
+            "interview process. Use queries like:\n"
+            "  - '[Company] data analyst interview questions Glassdoor 2024'\n"
+            "  - '[Company] data engineer phone screen questions'\n"
+            "  - '[Company] analytics interview process Reddit'\n"
+            "For Optum/UHG specifically search: 'Optum data analyst interview questions site:glassdoor.com'\n"
+            "Use what you find to write questions that mirror what those companies ACTUALLY ask. "
+            "If you can't find company-specific questions, write realistic questions for that role level.\n\n"
             "Create exactly 10 questions across these 5 categories (2 each):\n\n"
-            "**1. Behavioral (STAR format)** — Questions about teamwork, conflict, leadership, "
-            "failure, or prioritization. Write model answers using STAR format drawn from "
-            f"{NAME}'s real experience at Optum/UHG, CorroHealth, or MBA projects. "
-            "Include specific metrics (95%+ accuracy, team of 20, etc.).\n\n"
-            "**2. Technical — Engineering Stack (rotate tool day to day)** — One realistic "
-            "technical question on a tool from her target stack, rotating across: advanced SQL "
-            "(window functions, query optimization, partition pruning), Snowflake, Azure "
-            "(Data Factory/Synapse), Databricks/Spark + Delta, dbt, Python data pipelines. "
-            "Prefer the tool she is currently building (Snowflake/Azure first). "
-            f"Give the correct answer with explanation and trade-off. Aim at {SALARY_TARGET} level.\n\n"
-            "**3. System Design / Architecture** — A realistic data-engineering design prompt "
-            "(e.g. 'design a pipeline to ingest daily Medicare claims into Snowflake with quality "
-            "checks and incremental loads'). Senior-level answer: requirements → architecture → "
-            "tool choices + WHY → scale, cost, data quality.\n\n"
-            "**4. Case Study / Business Scenario** — A realistic business problem "
-            "(e.g. 'Revenue dropped 15% in Q3 — walk me through your analysis'). "
-            "Structured answer showing analytical thinking and stakeholder communication.\n\n"
-            "**5. Questions to Ask the Interviewer** — Two smart, specific questions that show "
-            "research and genuine interest (not generic questions).\n\n"
-            "For EVERY answer: confident and specific, first person, lead with impact, "
-            "acknowledge growth areas honestly. Under 200 words each."
+            "**1. Behavioral (STAR format)** — Draw from real questions those companies ask on "
+            f"Glassdoor. Write model STAR answers from {NAME}'s real experience at Optum/UHG, "
+            "CorroHealth, or MBA projects. Include specific metrics.\n\n"
+            "**2. Technical — Engineering Stack** — Pull a realistic technical question from "
+            "today's priority company interview reviews if found. Otherwise rotate across: "
+            "advanced SQL, Snowflake, Azure (ADF/Synapse), Databricks, dbt, Python pipelines. "
+            f"Give the full correct answer with the interviewer's intended test. {SALARY_TARGET} level.\n\n"
+            "**3. System Design / Architecture** — A design prompt matching what today's top "
+            "companies actually ask (search '[Company] system design interview data'). "
+            "Senior-level answer: requirements → architecture → tool choices + WHY → scale/cost/quality.\n\n"
+            "**4. Case Study / Business Scenario** — A realistic business problem from healthcare "
+            "analytics or the company's domain. Structured analytical + stakeholder answer.\n\n"
+            "**5. Questions to Ask the Interviewer** — Two smart, company-researched questions "
+            "showing you know their specific tech stack, team structure, or current initiatives.\n\n"
+            "For EVERY answer: first person, confident, specific, lead with impact, "
+            f"acknowledge growth areas honestly. Under 200 words each.{weak_signal}"
         ),
         expected_output=(
-            "10 interview questions with polished answers across 5 categories, "
-            "personalized to the candidate's real background."
+            "10 interview questions with polished answers across 5 categories. "
+            "At least 4 questions sourced from or inspired by real company interview reviews. "
+            "Questions and answers personalized to the candidate's background and today's companies."
         ),
         agent=agents["interview_coach"],
         context=[task_scan],

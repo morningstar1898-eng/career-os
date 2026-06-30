@@ -83,6 +83,7 @@ jobs:
           DEGREE=${{ secrets.DEGREE }}
           SKILLS_CURRENT=${{ secrets.SKILLS_CURRENT }}
           LESSON_HISTORY_PATH=lesson_history.txt
+          WEAK_INTERVIEW_CATEGORY=${{ steps.weak_cat.outputs.weak_category }}
           EOF
           sed -i 's/^[[:space:]]*//' .env
           sed -i 's/\xEF\xBB\xBF//g' .env
@@ -99,6 +100,34 @@ jobs:
           mkdir -p ~/.kaggle
           echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
+
+      # ── Feedback: find weakest interview category from real practice scores ──
+      # Queries /interview/history, groups avg score by category, writes the
+      # weakest one into WEAK_INTERVIEW_CATEGORY so the tutor and interview coach
+      # can prioritize it today.
+      - name: Compute weak interview category
+        id: weak_cat
+        if: steps.guard.outputs.skip == 'false'
+        continue-on-error: true
+        run: |
+          HISTORY=$(curl -s "${{ secrets.API_URL }}/interview/history?limit=50" || echo "[]")
+          WEAK=$(HISTORY_JSON="$HISTORY" python3 -c "
+import json, os
+sessions = json.loads(os.environ.get('HISTORY_JSON','[]'))
+scores, counts = {}, {}
+for s in sessions:
+    cat, score = s.get('category',''), s.get('score')
+    if cat and score is not None:
+        scores[cat] = scores.get(cat,0) + float(score)
+        counts[cat] = counts.get(cat,0) + 1
+if not scores:
+    print('')
+else:
+    avgs = {c: scores[c]/counts[c] for c in scores}
+    print(min(avgs, key=avgs.get))
+" || echo "")
+          echo "weak_category=$WEAK" >> "$GITHUB_OUTPUT"
+          echo "Weakest interview category: ${WEAK:-none}"
 
       - name: Run Career OS agents
         if: steps.guard.outputs.skip == 'false'

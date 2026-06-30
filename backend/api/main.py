@@ -16,6 +16,7 @@ from api.routes.auth import router as auth_router
 from api.routes.ingest import router as ingest_router
 from api.routes.activity import router as activity_router
 from api.routes.email import router as email_router
+from api.routes.pipeline import router as pipeline_router
 from api.ws import router as ws_router
 
 app = FastAPI(title="Career OS API", version="1.0.0")
@@ -38,6 +39,7 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(ingest_router, prefix="/ingest", tags=["ingest"])
 app.include_router(activity_router, prefix="/activity", tags=["activity"])
 app.include_router(email_router, prefix="/email", tags=["email"])
+app.include_router(pipeline_router, prefix="/pipeline", tags=["pipeline"])
 app.include_router(ws_router, tags=["websocket"])
 
 

@@ -195,6 +195,7 @@ export default function DashboardPage() {
         <h1 className="text-xl sm:text-2xl font-bold">Career OS <span className="text-accent">Dashboard</span></h1>
         <div className="flex gap-3 sm:gap-4 text-sm">
           <Link href="/" className="text-zinc-400 hover:text-white">Home</Link>
+          <Link href="/pipeline" className="text-zinc-400 hover:text-white">Pipeline</Link>
           <Link href="/interview" className="text-zinc-400 hover:text-white">Interview</Link>
           <Link href="/agents" className="text-zinc-400 hover:text-white">Agents</Link>
           <button onClick={() => { localStorage.removeItem("career_os_token"); window.location.href = "/"; }} className="text-zinc-500 hover:text-white text-xs">Logout</button>

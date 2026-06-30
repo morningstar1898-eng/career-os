@@ -144,6 +144,16 @@ else:
             -H "Content-Type: application/json" \
             -d "{\"secret\": \"${{ secrets.INGEST_SECRET }}\", \"crew_output\": $OUTPUT, \"jobs_applied\": ${JOBS_APPLIED:-0}, \"skills_gap_count\": 3, \"portfolio_items\": 2}"
 
+      - name: Sync applications to pipeline DB
+        if: success() && steps.guard.outputs.skip == 'false'
+        continue-on-error: true
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          INGEST_SECRET: ${{ secrets.INGEST_SECRET }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_CREDENTIALS_JSON: config/google_credentials.json
+        run: python3 sync_applications.py
+
       - name: Send email briefing
         if: success() && steps.guard.outputs.skip == 'false'
         continue-on-error: true

@@ -58,4 +58,16 @@ def init_db():
                 ai_feedback TEXT,
                 score REAL
             );
+
+            CREATE TABLE IF NOT EXISTS applications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date_applied TEXT NOT NULL,
+                company TEXT NOT NULL,
+                role TEXT NOT NULL,
+                url TEXT,
+                status TEXT NOT NULL DEFAULT 'Applied',
+                notes TEXT,
+                blob_url TEXT,
+                last_updated TEXT
+            );
         """)

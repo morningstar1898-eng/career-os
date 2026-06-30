@@ -1,0 +1,40 @@
+# LinkedIn Profile — Meagan Parsons
+# The LinkedIn optimizer agent compares this against top JD keywords each Monday
+# and suggests exact rewrites for headline, About, and skills.
+# Update this file whenever you change your LinkedIn manually.
+
+## CURRENT HEADLINE
+Healthcare Analyst | Medical Coding Quality | Data Analytics | SQL | Python | MBA
+
+## CURRENT ABOUT (copy/paste from LinkedIn "About" section)
+Experienced healthcare analyst with 5+ years at Optum/UHG specializing in
+medical coding quality, HCC risk adjustment, and revenue integrity. MBA in
+Data Analytics. Currently building AI-powered data tools and expanding into
+data engineering, analytics engineering, and ML roles at the intersection of
+healthcare and AI. Proficient in SQL, Python, Power BI, Snowflake, Azure, and dbt.
+
+## CURRENT SKILLS (top 10 as listed on LinkedIn)
+1. SQL
+2. Python
+3. Medical Coding
+4. HCC Risk Adjustment
+5. Power BI
+6. Data Analysis
+7. Healthcare Analytics
+8. Microsoft Excel
+9. Data Visualization
+10. Process Improvement
+
+## TARGET ROLES (for keyword gap analysis)
+Data Analyst, Analytics Engineer, Data Engineer, ML Engineer, AI Engineer,
+Business Intelligence Developer, Healthcare Data Analyst
+
+## TARGET COMPANIES (for JD keyword sourcing)
+Optum, UnitedHealth Group, Anthropic, OpenAI, Google, Microsoft, Databricks, Snowflake
+
+## NOTES FOR OPTIMIZER
+- Candidate is a current Optum employee — internal transfer language should stay
+- Avoid revealing side projects publicly if they reference current employer systems
+- DP-600 Fabric Analytics Engineer cert in progress (target Aug 2026) — add when passed
+- Career OS and MedCoding AI are safe to mention publicly as personal projects
+- "Healthcare + AI" positioning is the differentiator — lead with it

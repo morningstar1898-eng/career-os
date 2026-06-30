@@ -151,7 +151,83 @@ class SheetsLoggerTool(BaseTool):
 
 
 # ─────────────────────────────────────────────
-# 4. Azure Blob Upload Tool
+# 4. Google Sheets Reader Tool
+# ─────────────────────────────────────────────
+class SheetsReaderTool(BaseTool):
+    name: str = "read_from_sheets"
+    description: str = (
+        "Read all job applications from the Google Sheets tracker. "
+        "Returns a JSON array of all logged applications with their current status, "
+        "company, role, URL, date_applied, and notes. No input required."
+    )
+
+    def _run(self, query: str = "") -> str:
+        creds = service_account.Credentials.from_service_account_file(
+            os.getenv("GOOGLE_CREDENTIALS_JSON"),
+            scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+        )
+        service = build("sheets", "v4", credentials=creds)
+        result = service.spreadsheets().values().get(
+            spreadsheetId=os.getenv("GOOGLE_SHEET_ID"),
+            range="Sheet1!A:F"
+        ).execute()
+        values = result.get("values", [])
+        if not values or len(values) < 2:
+            return json.dumps([])
+        headers = [h.lower().replace(" ", "_") for h in values[0]]
+        applications = []
+        for row in values[1:]:
+            obj = {headers[i]: (row[i] if i < len(row) else "") for i in range(len(headers))}
+            applications.append(obj)
+        return json.dumps(applications)
+
+
+# ─────────────────────────────────────────────
+# 5. Application Materials Save Tool
+# ─────────────────────────────────────────────
+class SaveMaterialsTool(BaseTool):
+    name: str = "save_application_materials"
+    description: str = (
+        "Save cover letter + resume bullets to Azure Blob Storage for future reference. "
+        "Input: JSON with keys 'company' (string), 'role' (string), 'materials' (full text of "
+        "the generated cover letter and bullets). Returns the blob URL."
+    )
+
+    def _run(self, input_str: str) -> str:
+        from azure.storage.blob import BlobServiceClient
+        raw = (input_str or "").lstrip("﻿").strip()
+        if raw.startswith("```"):
+            raw = raw.strip("`").strip()
+            if raw[:4].lower() == "json":
+                raw = raw[4:].strip()
+        try:
+            data = json.loads(raw)
+            company = data.get("company", "unknown").lower().replace(" ", "-").replace("/", "-")
+            role = data.get("role", "unknown").lower().replace(" ", "-").replace("/", "-")[:50]
+            materials = data.get("materials", "")
+        except Exception:
+            return "Error: input must be JSON with company, role, materials."
+
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        blob_name = f"application-materials/{date_str}/{company}--{role}.txt"
+
+        conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+        if not conn_str:
+            return "Error: AZURE_STORAGE_CONNECTION_STRING not set."
+
+        client = BlobServiceClient.from_connection_string(conn_str)
+        container = os.getenv("AZURE_STORAGE_CONTAINER", "portfolio-charts")
+        try:
+            client.get_blob_client(container=container, blob=blob_name).upload_blob(
+                materials.encode("utf-8"), overwrite=True
+            )
+            return f"✅ Materials saved: {container}/{blob_name}"
+        except Exception as e:
+            return f"Error saving materials: {str(e)[:200]}"
+
+
+# ─────────────────────────────────────────────
+# 6. Azure Blob Upload Tool
 # ─────────────────────────────────────────────
 class AzureBlobTool(BaseTool):
     name: str = "upload_to_azure"

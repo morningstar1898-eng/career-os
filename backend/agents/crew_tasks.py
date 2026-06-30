@@ -12,6 +12,7 @@ NAME  = os.getenv("YOUR_NAME", "the candidate")
 JOBS_PER_DAY = int(os.getenv("JOBS_PER_DAY", "10"))
 FULL_APPLICATIONS = min(int(os.getenv("FULL_APPLICATIONS", "5")), JOBS_PER_DAY)
 SALARY_TARGET = os.getenv("SALARY_TARGET", "$120,000-$150,000+")
+IS_MONDAY = datetime.now().weekday() == 0  # 0 = Monday
 
 # AI/tech companies always searched — regardless of TARGET_COMPANIES secret.
 AI_TECH_COMPANIES = [
@@ -189,10 +190,13 @@ def build_tasks(agents: dict) -> list:
             "(why THIS company, not just any data role). Para 2 — strongest STAR match. "
             "Para 3 — fit + call to action. For AI companies, lead Para 1 with Career OS/MedCoding AI.\n\n"
             "Do NOT fabricate experience. For stretch roles, frame growth areas honestly.\n\n"
-            "FINAL STEP — ATS SCORE: After writing materials for each role, add a one-line "
-            "ATS summary: 'ATS Match: XX% — Keywords hit: [list] — Missing: [list]'. "
-            "Count keyword hits by comparing your bullets + cover letter against the JD's "
-            "required skills. This tells the candidate which applications are strong before she sends them."
+            "FINAL STEP — ATS SCORE + SAVE MATERIALS: After writing materials for each role:\n"
+            "1. Add a one-line ATS summary: 'ATS Match: XX% — Keywords hit: [list] — Missing: [list]'. "
+            "   Count keyword hits by comparing your bullets + cover letter against the JD's required skills.\n"
+            "2. Call save_application_materials with JSON: "
+            '   {"company": "...", "role": "...", "materials": "full cover letter + bullets text"} '
+            "   for each role. This archives the materials so the candidate can reference them later.\n"
+            "   You MUST call save_application_materials for each role you produce materials for."
         ),
         expected_output=(
             f"For each of the top {FULL_APPLICATIONS} roles:\n"
@@ -256,7 +260,84 @@ def build_tasks(agents: dict) -> list:
         context=[task_scan],
     )
 
-    # ── Task 6: Compile briefing ──────────────────────────
+    # ── Task 6: Follow-up check ───────────────────────────
+    task_followup = Task(
+        description=(
+            f"Today is {TODAY}. Read the full Google Sheets job application tracker using "
+            "read_from_sheets. Find ALL applications that:\n"
+            "  - Have status 'Applied'\n"
+            "  - Have a date_applied that is 7 or more days before today\n\n"
+            "For each stale application:\n"
+            "1. Calculate exact days since applied.\n"
+            "2. Classify: 7-13 days = 'Follow Up', 14+ days = 'URGENT — possible ghost'.\n"
+            "3. Search for the company's recruiter or hiring manager on LinkedIn "
+            "(query: '[Company] [role] recruiter LinkedIn' or '[Company] data team hiring').\n"
+            "4. Write a SHORT follow-up email template (3 sentences max):\n"
+            "   - Sentence 1: Reference the role and application date.\n"
+            "   - Sentence 2: One-line reinforcement of why she's a strong fit.\n"
+            "   - Sentence 3: Ask if there's anything else needed / express continued interest.\n"
+            "5. For Optum/UHG applications: note that internal candidates can also reach out "
+            "to the hiring manager directly through the internal directory or Teams.\n\n"
+            "If there are no stale applications, output: 'No follow-ups needed today. Pipeline is current.'"
+        ),
+        expected_output=(
+            "A prioritized follow-up list: for each stale application — company, role, "
+            "days since applied, urgency flag, contact found (if any), and a 3-sentence "
+            "follow-up email template. OR a 'No follow-ups needed' confirmation."
+        ),
+        agent=agents["followup_checker"],
+    )
+
+    # ── Task 7: LinkedIn optimizer (Monday only) ──────────
+    if IS_MONDAY:
+        task_linkedin = Task(
+            description=(
+                f"Today is {TODAY} (Monday — weekly LinkedIn optimization day). "
+                "Using the job postings and top skill keywords from Task 1, perform a full "
+                "LinkedIn profile audit for the candidate.\n\n"
+                "DELIVERABLE FORMAT:\n"
+                "## LinkedIn Audit — " + TODAY + "\n\n"
+                "### Keyword Gap Analysis\n"
+                "List keywords from the top 10 job postings that appear 3+ times but are NOT "
+                "in the current LinkedIn headline, About, or Skills. For each missing keyword:\n"
+                "  - Keyword | Appears in N/10 postings | Where to add (headline/About/Skills)\n\n"
+                "### Headline Rewrite\n"
+                "Current: [paste current headline]\n"
+                "Suggested: [exact replacement text, under 220 characters]\n"
+                "Why: [one sentence — what algorithm signal this improves]\n\n"
+                "### About Section — First 2 Lines Rewrite\n"
+                "(The first 2 lines are what shows before 'see more' — they determine click-through)\n"
+                "Current first 2 lines: [from profile]\n"
+                "Suggested replacement: [exact text]\n\n"
+                "### Skills to Add (max 5, from keyword gaps)\n"
+                "List each skill + which JDs it came from.\n\n"
+                "### Monday Checklist (each item under 2 min)\n"
+                "[ ] Update headline\n"
+                "[ ] Update About first 2 lines\n"
+                "[ ] Add skills: [list]\n"
+                "[ ] [Any other quick wins found in audit]\n\n"
+                "Be specific. Every suggestion must be a direct copy-paste action."
+            ),
+            expected_output=(
+                "A complete LinkedIn audit with: keyword gap table, exact headline rewrite, "
+                "exact About first-2-lines rewrite, skills to add, and a Monday action checklist."
+            ),
+            agent=agents["linkedin_optimizer"],
+            context=[task_scan],
+        )
+    else:
+        task_linkedin = None
+
+    # ── Task 8: Compile briefing ──────────────────────────
+    extra_context = []
+    if task_linkedin:
+        extra_context.append(task_linkedin)
+
+    linkedin_section = (
+        "\n## LinkedIn Optimizer (Monday weekly audit — rewrites from Task 7)" if IS_MONDAY else ""
+    )
+    followup_section = "\n## Follow-Up Actions (stale applications needing contact — from Task 6)"
+
     task_brief = Task(
         description=(
             f"Today is {TODAY}. Compile all agent outputs into one Notion daily briefing for {NAME}. "
@@ -264,9 +345,11 @@ def build_tasks(agents: dict) -> list:
             "# Daily Career Briefing — {TODAY}\n"
             "## Today's Market Signal (top 3 skill gaps from Task 1)\n"
             "## Today's Lesson & Interview Q&A (lesson topic + the 5 interview questions with answers)\n"
-            "## Jobs Applied Today (table: company | role | status — from Task 4 apply list)\n"
+            "## Jobs Applied Today (table: company | role | ATS% | status — from Task 4 apply list)\n"
             "## This Week's Project Idea (portfolio project concept + dataset from Task 2)\n"
             "## Interview Prep (today's 10 practice Q&As by category from Task 5)\n"
+            f"{followup_section}\n"
+            f"{linkedin_section}\n"
             "## Tomorrow's Focus (one sentence: what to practice)\n\n"
             "Keep it to what a busy person will actually read in 5 minutes. "
             "Plain English, no filler."
@@ -275,7 +358,11 @@ def build_tasks(agents: dict) -> list:
             "Confirmation that the Notion page was created successfully, with the page title."
         ),
         agent=agents["orchestrator"],
-        context=[task_scan, task_data, task_lesson, task_apply, task_interview],
+        context=[task_scan, task_data, task_lesson, task_apply, task_interview, task_followup] + extra_context,
     )
 
-    return [task_scan, task_data, task_lesson, task_apply, task_interview, task_brief]
+    base_tasks = [task_scan, task_data, task_lesson, task_apply, task_interview, task_followup]
+    if task_linkedin:
+        base_tasks.append(task_linkedin)
+    base_tasks.append(task_brief)
+    return base_tasks

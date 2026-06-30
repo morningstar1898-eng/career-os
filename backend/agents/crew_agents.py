@@ -4,7 +4,7 @@ Defines all 5 agents. Each has a role, goal, backstory, and tools.
 """
 import os
 from crewai import Agent, LLM
-from tools.shared_tools import WebSearchTool, NotionWriterTool, SheetsLoggerTool, AzureBlobTool
+from tools.shared_tools import WebSearchTool, NotionWriterTool, SheetsLoggerTool, AzureBlobTool, SheetsReaderTool, SaveMaterialsTool
 
 AI_COMPANIES = "Anthropic, OpenAI, Google DeepMind, Google Cloud, Microsoft, Meta AI, Databricks, Snowflake"
 INTERNAL_COMPANIES = "Optum, UnitedHealth Group, UHG"  # candidate is a current employee — internal transfers are priority
@@ -29,10 +29,12 @@ def get_tutor_llm():
 
 def build_agents():
     llm = get_llm()
-    web    = WebSearchTool()
-    notion = NotionWriterTool()
-    sheets = SheetsLoggerTool()
-    azure  = AzureBlobTool()
+    web         = WebSearchTool()
+    notion      = NotionWriterTool()
+    sheets      = SheetsLoggerTool()
+    sheets_read = SheetsReaderTool()
+    save_mats   = SaveMaterialsTool()
+    azure       = AzureBlobTool()
 
     name   = os.getenv("YOUR_NAME", "the candidate")
     roles  = os.getenv("TARGET_ROLES", "Data Analyst")
@@ -190,7 +192,7 @@ def build_agents():
             "Write cover letters that open with a company-specific hook, not a generic greeting.\n\n"
             f"CANDIDATE RESUME:\n{resume_text}"
         ),
-        tools=[web, sheets],
+        tools=[web, sheets, save_mats],
         llm=llm,
         verbose=True,
         allow_delegation=False,
@@ -250,6 +252,71 @@ def build_agents():
         max_iter=5,
     )
 
+    # ── Agent 7: Follow-up Checker ──────────────────────────
+    followup_checker = Agent(
+        role="Application Follow-up Tracker",
+        goal=(
+            "Read the Google Sheets job application tracker, find applications that have been "
+            "in 'Applied' status for 7+ days without a response, and generate a prioritized "
+            "follow-up action list. For each stale application, search for the hiring manager "
+            "or recruiter LinkedIn info, suggest a follow-up email template (2-3 sentences, "
+            "specific to the company/role), and flag any that are past 14 days as 'urgent'. "
+            "Ghosted applications at Optum/UHG should be escalated — include the internal "
+            "employee helpdesk or hiring contact if findable."
+        ),
+        backstory=(
+            "You are a relentless application tracker who knows that most jobs are won by "
+            "the person who follows up, not the person who applies first. You've seen hundreds "
+            "of candidates lose offers simply by going silent after submitting. You read the "
+            "tracker, spot the silent applications, and generate follow-up messages that are "
+            "professional, warm, and specific enough to stand out. You keep the candidate's "
+            "pipeline moving even when the market is quiet."
+        ),
+        tools=[sheets_read, web],
+        llm=llm,
+        verbose=True,
+        allow_delegation=False,
+        max_iter=8,
+    )
+
+    # ── Agent 8: LinkedIn Optimizer (Monday only) ─────────
+    # Load LinkedIn profile for comparison
+    linkedin_profile_path = "config/linkedin_profile.txt"
+    try:
+        with open(linkedin_profile_path, "r", encoding="utf-8") as f:
+            linkedin_profile = f.read()
+    except FileNotFoundError:
+        linkedin_profile = "LinkedIn profile file not found at config/linkedin_profile.txt."
+
+    linkedin_optimizer = Agent(
+        role="LinkedIn Profile Optimizer",
+        goal=(
+            f"Compare {name}'s current LinkedIn profile against the top keyword requirements "
+            "from this week's job postings. Identify exact keyword gaps in the headline, "
+            "About section, and Skills list. Provide specific rewrite suggestions for each — "
+            "not vague advice like 'add more keywords' but exact replacement text the candidate "
+            "can paste in. Prioritize keywords that appear in 3+ of the top 10 postings. "
+            "Flag skills she has that aren't on LinkedIn yet. "
+            "Also check: is the headline algorithm-optimized? Is the About section in first person? "
+            "Does it lead with the healthcare+AI positioning that differentiates her? "
+            "Output a Monday action checklist: each item completable in under 2 minutes."
+        ),
+        backstory=(
+            "You are a LinkedIn algorithm specialist and personal brand consultant who has "
+            "helped 500+ data professionals get discovered by recruiters. You know exactly "
+            "which words trigger LinkedIn's search algorithm, which headlines get clicked, "
+            "and which About sections make recruiters read past the first line. "
+            "You treat the profile like a landing page: headline is the H1, About is the hook, "
+            "skills are the meta-keywords. You don't give generic advice — you give the candidate "
+            "the exact text to replace, word for word."
+        ),
+        tools=[web],
+        llm=get_tutor_llm(),
+        verbose=True,
+        allow_delegation=False,
+        max_iter=6,
+    )
+
     return {
         "skills_scout": skills_scout,
         "data_analyst": data_analyst,
@@ -257,4 +324,6 @@ def build_agents():
         "job_applicant": job_applicant,
         "interview_coach": interview_coach,
         "orchestrator": orchestrator,
+        "followup_checker": followup_checker,
+        "linkedin_optimizer": linkedin_optimizer,
     }

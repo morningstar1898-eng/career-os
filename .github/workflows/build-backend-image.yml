@@ -1,0 +1,32 @@
+name: Build Backend Image
+
+# Builds the backend Docker image and pushes it to GitHub Container Registry
+# (ghcr.io) so Azure App Service can run it as a container (bypasses Oryx).
+# Free: GitHub Actions build minutes + GHCR storage.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/career-os-api:latest

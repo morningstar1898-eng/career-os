@@ -64,5 +64,11 @@ Optum, UnitedHealth Group, Anthropic, OpenAI, Google, Microsoft, Databricks, Sno
 - "Healthcare + AI" positioning is the differentiator — lead with it
 - 2026-06-30: Added 10 resume skills to LinkedIn (dbt, Power BI, Azure Data Factory, Microsoft
   Azure, FastAPI, Scikit-Learn, GitHub, LLMs, Data Warehousing, ETL, Machine Learning).
+- 2026-06-30: Reordered the Skills SECTION to lead with AI/eng: Machine Learning, Large Language
+  Models, Scikit-Learn, FastAPI, Microsoft Azure.
+- NOTE for optimizer: the "Top skills" pill under the About summary is ENDORSEMENT-driven, NOT
+  manually orderable. It currently shows SQL, Tableau, Python, PostgreSQL, Pandas (most-endorsed).
+  Do NOT recommend "reorder your top skills" — instead recommend seeking endorsements on
+  Machine Learning / LLMs / Snowflake / Python to shift that pill over time.
 - Still NOT on LinkedIn vs resume: Azure Synapse, ADLS Gen2 (specific), dbt tests/macros depth.
   Optimizer may suggest these only if they appear in 3+ of the week's job postings.

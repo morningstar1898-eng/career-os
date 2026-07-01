@@ -38,12 +38,16 @@ Let's connect if you're working on healthcare data, analytics engineering, or re
 
 morningstar1898@gmail.com
 
-## CURRENT SKILLS (top skills as listed on LinkedIn)
-1. SQL
-2. Tableau
-3. Python (Programming Language)
-4. PostgreSQL
-5. Pandas (Software)
+## CURRENT SKILLS (as listed on LinkedIn — updated 2026-06-30)
+# Pinned/top: SQL, Tableau, Python (Programming Language), PostgreSQL, Pandas (Software)
+# Data/AI stack: Machine Learning, Extract Transform Load (ETL), Data Warehousing,
+#   Large Language Models (LLM), GitHub, Scikit-Learn, FastAPI, Microsoft Azure,
+#   Azure Data Factory, Microsoft Power BI, Data Build Tool (dbt), Snowflake, Azure Databricks
+# Domain: Risk Adjustment, Healthcare Reimbursement, Compliance Reporting, Medical Databases,
+#   Data Coding, Audit Reports, Root Cause Analysis, Business Intelligence Reporting,
+#   Reporting & Analysis, Risk Monitoring, Risk Reporting, Records Management, Database Modeling,
+#   Data Loading, Financial Training, High Level Of Accuracy, Biochemistry,
+#   Microsoft Visual Studio Code
 
 ## TARGET ROLES (for keyword gap analysis)
 Data Analyst, Analytics Engineer, Data Engineer, ML Engineer, AI Engineer,
@@ -58,6 +62,7 @@ Optum, UnitedHealth Group, Anthropic, OpenAI, Google, Microsoft, Databricks, Sno
 - DP-600 Fabric Analytics Engineer cert in progress (target Aug 2026) — add when passed
 - Career OS and MedCoding AI are safe to mention publicly as personal projects
 - "Healthcare + AI" positioning is the differentiator — lead with it
-- Skills notably absent from LinkedIn that are on the resume: dbt, Power BI, Azure Data Factory,
-  Azure Synapse, Snowflake, Azure (ADLS Gen2), GitHub Actions, FastAPI, scikit-learn
-  — optimizer should recommend adding these
+- 2026-06-30: Added 10 resume skills to LinkedIn (dbt, Power BI, Azure Data Factory, Microsoft
+  Azure, FastAPI, Scikit-Learn, GitHub, LLMs, Data Warehousing, ETL, Machine Learning).
+- Still NOT on LinkedIn vs resume: Azure Synapse, ADLS Gen2 (specific), dbt tests/macros depth.
+  Optimizer may suggest these only if they appear in 3+ of the week's job postings.

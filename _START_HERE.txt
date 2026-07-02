@@ -1,0 +1,78 @@
+CAREER OS — EXTERNAL AUDIT BRIEF
+=================================
+(You are auditing a zip of this repo. Read this file first, then follow the
+reading order below.)
+
+WHAT THIS PROJECT IS
+--------------------
+Career OS is a personal, automated AI job-search system: a CrewAI multi-agent
+crew (Python/FastAPI backend) that runs every weekday via GitHub Actions cron,
+finds ~10 target jobs/day, drafts tailored resume bullets + cover letters for
+the top 5, logs everything to a Google Sheet tracker, emails a daily briefing,
+and teaches a rotating daily lesson. A Next.js dashboard (Vercel) shows
+briefings, an application-pipeline Kanban, interview prep, and analytics.
+Backend runs as a Docker container on Azure App Service (B1, always-on),
+image built by GitHub Actions and pushed to a private GHCR registry.
+
+Agents (backend/agents + crew config): Skills Scout (finds + logs jobs),
+Job Applicant (drafts materials + ATS keyword scoring), Tutor (daily lesson,
+Sonnet), Interview Coach, LinkedIn Optimizer (Mondays, Sonnet), Follow-up
+Tracker. All others run on Claude Haiku 4.5.
+
+IMPORTANT CONTEXT
+-----------------
+- This system DRAFTS application materials and logs jobs. It NEVER
+  auto-submits applications — the owner applies herself. Keep it that way.
+- The owner is a current Optum/UHG employee job-hunting confidentially:
+  internal Optum transfers are the top scan priority, and the repo, Docker
+  image, and dashboard must all stay PRIVATE. The dashboard is password-gated
+  because it reveals which companies she's applying to.
+- This zip contains her real resume text, LinkedIn profile text, and target
+  companies — she is sharing it knowingly for this audit. Do not suggest
+  publishing any of it.
+- Agent reliability is a known constraint: at higher job counts the Haiku
+  apply-agent starts refusing ("can't verify these jobs"). The fix that works:
+  the agent that FINDS the jobs also LOGS them (firsthand data = no refusals),
+  and counts stay modest (10/day, 5 full applications). Don't recommend
+  raising counts or moving logging back to the apply agent.
+
+READING ORDER
+-------------
+1. README.md                      — overview + setup
+2. .github/workflows/             — the daily cron (multi-window schedule +
+                                    already-ran guard) and the backend
+                                    image-build workflow
+3. backend/main.py                — crew orchestration entry
+4. backend/agents/ + backend/tools/ — agent definitions, tasks, shared tools
+                                    (Sheets logging, materials archive)
+5. backend/api/                   — FastAPI routes: briefings, pipeline
+                                    Kanban, interview history, email renderer,
+                                    db (SQLite at CAREER_OS_DB path)
+6. backend/sync_applications.py   — Sheet → pipeline DB sync
+7. backend/Dockerfile             — the container deploy path
+8. frontend/app/                  — dashboard, pipeline Kanban, interview pages
+9. AUDIT-LOG.md                   — findings from previous rounds
+
+WHAT I WANT FROM THIS AUDIT
+---------------------------
+1. Agent & prompt design — task prompts, agent goals, max_iter budgets,
+   refusal-resilience, model choices (Haiku vs Sonnet). Where will this crew
+   silently degrade, hallucinate jobs, or waste tokens?
+2. Backend code review — FastAPI routes, DB layer (SQLite), auth (known
+   weakness: in-memory tokens reset on redeploy), input validation, the
+   Sheet-sync upsert logic.
+3. Reliability — the cron guard logic, error handling when an agent fails
+   mid-run, what happens to the email/Sheet/DB when steps partially fail.
+4. Security/privacy — anything that could leak her job search (endpoints
+   without auth, logs, the public /briefings endpoints), secrets handling
+   (env vars only — confirm nothing hardcoded).
+5. Frontend — quick sanity pass on the dashboard/Kanban (internal tool).
+6. Architecture — is the monorepo + Actions-cron + container-on-Azure shape
+   right? Single points of failure? What would you simplify?
+
+RESPOND IN THIS FORMAT
+----------------------
+A numbered list of findings, most important first. For each: WHAT (the issue),
+WHERE (file + function/line), WHY it matters, and the FIX (concrete, code
+where useful). Finish with a short "top 5 priorities" summary I can apply in
+order.

@@ -56,7 +56,9 @@ def main():
             "company": r.get("company", ""),
             "role": r.get("role", ""),
             "url": r.get("url", ""),
-            "status": r.get("status", "Applied"),
+            # Automation default is Found — the /ingest endpoint additionally
+            # coerces any non-automation status; only the user sets Applied.
+            "status": r.get("status", "Found"),
             "notes": r.get("notes", ""),
         }
         for r in today_rows

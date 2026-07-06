@@ -12,12 +12,12 @@ interface Run {
   trigger: string;
 }
 
-const AGENT_NAMES = ["Skills Scout", "Data Analyst", "Tutor", "Job Applicant", "Interview Coach", "Orchestrator"];
+const AGENT_NAMES = ["Skills Scout", "Data Analyst", "Tutor", "Materials Drafter", "Interview Coach", "Orchestrator"];
 const AGENT_COLORS: Record<string, string> = {
   "Skills Scout": "text-blue-400",
   "Data Analyst": "text-emerald-400",
   "Tutor": "text-amber-400",
-  "Job Applicant": "text-rose-400",
+  "Materials Drafter": "text-rose-400",
   "Interview Coach": "text-violet-400",
   "Orchestrator": "text-cyan-400",
 };

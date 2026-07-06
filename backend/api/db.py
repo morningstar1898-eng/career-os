@@ -2,11 +2,15 @@ import sqlite3
 import os
 from contextlib import contextmanager
 
-DB_PATH = os.getenv("CAREER_OS_DB", os.path.join(os.path.dirname(__file__), "..", "career_os.db"))
+from api import config
 
 
 def get_connection():
-    conn = sqlite3.connect(DB_PATH)
+    path = config.db_path()
+    parent = os.path.dirname(os.path.abspath(path))
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     return conn
@@ -20,6 +24,13 @@ def get_db():
         conn.commit()
     finally:
         conn.close()
+
+
+def _add_column_if_missing(conn, table: str, column: str, ddl: str):
+    """Idempotent, non-destructive schema migration for existing databases."""
+    cols = {r["name"] for r in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+    if column not in cols:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}")
 
 
 def init_db():
@@ -65,9 +76,19 @@ def init_db():
                 company TEXT NOT NULL,
                 role TEXT NOT NULL,
                 url TEXT,
-                status TEXT NOT NULL DEFAULT 'Applied',
+                status TEXT NOT NULL DEFAULT 'Found',
                 notes TEXT,
                 blob_url TEXT,
                 last_updated TEXT
             );
         """)
+        # Additive migrations for databases created before these columns existed.
+        _add_column_if_missing(conn, "runs", "error_message", "TEXT")
+        _add_column_if_missing(conn, "runs", "stage", "TEXT")
+        _add_column_if_missing(conn, "runs", "user_id", "INTEGER")
+        _add_column_if_missing(conn, "applications", "source", "TEXT")
+        _add_column_if_missing(conn, "applications", "validation_status", "TEXT")
+
+        # Multi-user SaaS tables (all keyed by user_id).
+        from api.saas.schema import init_saas_schema
+        init_saas_schema(conn)

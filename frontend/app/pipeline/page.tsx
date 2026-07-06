@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { fetchAPI } from "../../lib/api";
 import Link from "next/link";
 
-type Status = "Applied" | "Phone Screen" | "Interview" | "Offer" | "Rejected" | "Ghosted" | "Withdrawn";
+type Status =
+  | "Found" | "Drafted" | "Ready to Apply"
+  | "Applied" | "Phone Screen" | "Interview" | "Offer"
+  | "Rejected" | "Ghosted" | "Withdrawn";
 
 interface Application {
   id: number;
@@ -18,10 +21,15 @@ interface Application {
   days_since_applied?: number;
 }
 
-const COLUMNS: Status[] = ["Applied", "Phone Screen", "Interview", "Offer", "Rejected"];
-const GHOST_COLS: Status[] = ["Ghosted", "Withdrawn"];
+// Found / Drafted / Ready to Apply come from the agents (drafts only).
+// Applied and beyond are set manually — the user is the only one who applies.
+const COLUMNS: Status[] = ["Found", "Drafted", "Ready to Apply", "Applied", "Phone Screen", "Interview", "Offer"];
+const GHOST_COLS: Status[] = ["Rejected", "Ghosted", "Withdrawn"];
 
 const COL_STYLES: Record<Status, { border: string; badge: string; dot: string }> = {
+  Found:        { border: "border-sky-500/50",  badge: "bg-sky-900/60 text-sky-300",       dot: "bg-sky-400"    },
+  Drafted:      { border: "border-violet-500/50", badge: "bg-violet-900/60 text-violet-300", dot: "bg-violet-400" },
+  "Ready to Apply": { border: "border-cyan-500/50", badge: "bg-cyan-900/60 text-cyan-300", dot: "bg-cyan-400"   },
   Applied:      { border: "border-zinc-600",   badge: "bg-zinc-700 text-zinc-300",        dot: "bg-zinc-400"   },
   "Phone Screen": { border: "border-blue-500/60", badge: "bg-blue-900/60 text-blue-300", dot: "bg-blue-400"   },
   Interview:    { border: "border-amber-500/60", badge: "bg-amber-900/60 text-amber-300", dot: "bg-amber-400" },
@@ -31,7 +39,7 @@ const COL_STYLES: Record<Status, { border: string; badge: string; dot: string }>
   Withdrawn:    { border: "border-zinc-700/40", badge: "bg-zinc-800/60 text-zinc-500",     dot: "bg-zinc-600"   },
 };
 
-const ALL_STATUSES: Status[] = [...COLUMNS, "Ghosted", "Withdrawn"];
+const ALL_STATUSES: Status[] = [...COLUMNS, ...GHOST_COLS];
 
 export default function PipelinePage() {
   const [apps, setApps] = useState<Application[]>([]);
@@ -121,7 +129,7 @@ export default function PipelinePage() {
       )}
 
       {/* Summary row */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 mb-6">
+      <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-3 mb-6">
         {COLUMNS.map((col) => {
           const count = byStatus(col).length;
           const s = COL_STYLES[col];
@@ -141,7 +149,7 @@ export default function PipelinePage() {
           <p className="text-zinc-600 text-xs mt-2">The pipeline populates automatically after each daily run.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4 mb-6">
           {COLUMNS.map((col) => {
             const colApps = byStatus(col);
             const s = COL_STYLES[col];
@@ -170,17 +178,17 @@ export default function PipelinePage() {
         </div>
       )}
 
-      {/* Ghosted / Withdrawn toggle */}
-      {(byStatus("Ghosted").length > 0 || byStatus("Withdrawn").length > 0) && (
+      {/* Rejected / Ghosted / Withdrawn toggle */}
+      {GHOST_COLS.some((c) => byStatus(c).length > 0) && (
         <div className="mt-2">
           <button
             onClick={() => setShowGhosted((v) => !v)}
             className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors mb-3"
           >
-            {showGhosted ? "▼" : "▶"} {byStatus("Ghosted").length + byStatus("Withdrawn").length} archived (Ghosted/Withdrawn)
+            {showGhosted ? "▼" : "▶"} {GHOST_COLS.reduce((n, c) => n + byStatus(c).length, 0)} archived (Rejected/Ghosted/Withdrawn)
           </button>
           {showGhosted && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {GHOST_COLS.map((col) => {
                 const colApps = byStatus(col);
                 if (!colApps.length) return null;
@@ -227,7 +235,7 @@ export default function PipelinePage() {
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs text-zinc-400">
-              <span>Applied: <span className="text-zinc-300">{selected.date_applied}</span></span>
+              <span>Logged: <span className="text-zinc-300">{selected.date_applied}</span></span>
               <span>Days: <span className={daysColor(selected.days_since_applied ?? 0)}>{selected.days_since_applied ?? "—"}d</span></span>
               {selected.url && (
                 <span className="col-span-2 truncate">

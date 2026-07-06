@@ -1,3 +1,12 @@
+"""
+Demo seeding — recruiter-safe sample data only.
+
+All companies are fictitious, all notes are generic, and statuses are
+truthful to how the system actually works: agents FIND jobs and DRAFT
+materials; only a manual user action marks anything Applied. This router is
+only registered outside production (or in PUBLIC_DEMO_MODE, which uses a
+separate demo database).
+"""
 import json
 from datetime import datetime, timedelta
 from fastapi import APIRouter
@@ -11,18 +20,30 @@ SAMPLE_BRIEFING = {
         "Python/pandas (72% of postings)",
         "Tableau or Power BI (65% of postings)"
     ],
-    "lesson_summary": "Today's lesson: Window Functions in SQL — ROW_NUMBER, RANK, and LEAD/LAG for time-series analysis. Practiced with a healthcare claims dataset.",
-    "jobs_applied": [
-        {"company": "UnitedHealth Group", "role": "Senior Data Analyst", "status": "Applied"},
-        {"company": "Humana", "role": "BI Analyst", "status": "Applied"},
-        {"company": "Cigna", "role": "Analytics Engineer", "status": "Applied"},
-        {"company": "Deloitte", "role": "Data Analyst - Healthcare", "status": "Applied"},
-        {"company": "Epic Systems", "role": "Data Analyst", "status": "Applied"},
+    "lesson_summary": "Today's lesson: Window Functions in SQL — ROW_NUMBER, RANK, and LEAD/LAG for time-series analysis. Practiced with a sample claims dataset.",
+    "jobs_found": [
+        {"company": "Lakeside Health Analytics", "role": "Senior Data Analyst", "status": "Ready to Apply"},
+        {"company": "Nimbus Data Co.", "role": "BI Analyst", "status": "Drafted"},
+        {"company": "Beacon Insights", "role": "Analytics Engineer", "status": "Drafted"},
+        {"company": "Cascade Health Systems", "role": "Data Analyst - Healthcare", "status": "Found"},
+        {"company": "Orbit Analytics", "role": "Data Analyst", "status": "Found"},
     ],
-    "portfolio_update": "Analyzed CMS Medicare claims dataset (2.3M records). Generated 3 charts: cost distribution by DRG, readmission rates by region, length-of-stay trends. Uploaded to Azure Blob.",
+    "portfolio_update": "Analyzed a public claims dataset (2.3M records). Generated 3 charts: cost distribution by DRG, readmission rates by region, length-of-stay trends.",
     "interview_preview": "Practiced 10 questions across behavioral (STAR), technical SQL, domain knowledge, case study, and interviewer questions.",
     "tomorrow_focus": "Practice CTEs and subqueries — appeared in 4 of today's top job postings."
 }
+
+SAMPLE_APPLICATIONS = [
+    # (days_ago, company, role, status, notes)
+    (1,  "Lakeside Health Analytics", "Senior Data Analyst",      "Ready to Apply", "Materials drafted — review before submitting"),
+    (1,  "Nimbus Data Co.",           "BI Analyst",               "Drafted",        "Cover letter drafted"),
+    (2,  "Beacon Insights",           "Analytics Engineer",       "Found",          "Strong skills match: SQL, dbt"),
+    (4,  "Cascade Health Systems",    "Data Analyst - Healthcare","Applied",        "Submitted manually via careers page"),
+    (9,  "Orbit Analytics",           "Data Analyst",             "Applied",        "Submitted manually — follow up due"),
+    (12, "Summit Care Data",          "Reporting Analyst",        "Phone Screen",   "Recruiter call scheduled"),
+    (20, "Harborview Analytics",      "Data Analyst II",          "Interview",      "Panel round next week"),
+    (30, "Meridian Health Tech",      "BI Developer",             "Rejected",       "Went with internal candidate"),
+]
 
 
 @router.post("/seed")
@@ -39,7 +60,7 @@ def seed_demo_data():
                 continue
 
             conn.execute(
-                "INSERT OR IGNORE INTO runs (started_at, finished_at, status, trigger) VALUES (?, ?, 'success', 'cron')",
+                "INSERT OR IGNORE INTO runs (started_at, finished_at, status, trigger, stage) VALUES (?, ?, 'success', 'cron', 'done')",
                 (day.replace(hour=13, minute=0).isoformat(), day.replace(hour=13, minute=8).isoformat()),
             )
             run_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
@@ -49,6 +70,7 @@ def seed_demo_data():
                 (run_id, date_str, json.dumps(SAMPLE_BRIEFING)),
             )
 
+            # metrics.jobs_applied is a legacy column name: it counts jobs FOUND.
             jobs = 3 + (i % 4)
             gaps = max(3, 10 - i)
             score = min(8.5, 4.0 + i * 0.35)
@@ -58,9 +80,22 @@ def seed_demo_data():
                 (date_str, jobs, gaps, round(score, 1), portfolio),
             )
 
+        # Sample pipeline (fictitious companies; 'Applied' rows model a MANUAL user action)
+        for days_ago, company, role, status, notes in SAMPLE_APPLICATIONS:
+            date_str = (now - timedelta(days=days_ago)).strftime("%Y-%m-%d")
+            existing = conn.execute(
+                "SELECT id FROM applications WHERE company = ? AND role = ?", (company, role)
+            ).fetchone()
+            if not existing:
+                conn.execute(
+                    "INSERT INTO applications (date_applied, company, role, url, status, notes, source, validation_status, last_updated) "
+                    "VALUES (?, ?, ?, ?, ?, ?, 'demo-seed', 'verified', ?)",
+                    (date_str, company, role, "https://example.com/careers", status, notes, now.isoformat()),
+                )
+
         categories = ["behavioral", "technical", "domain", "case_study", "questions_to_ask"]
         sample_questions = {
-            "behavioral": ("Tell me about a time you had to present complex data to non-technical stakeholders.", "At Optum, I built a claims denial dashboard for our leadership team. I translated ICD-10 denial patterns into plain-language insights with a traffic-light system. The VP said it was the first time she actually understood why denials were spiking. Result: we reduced denial rates by 12% in Q3."),
+            "behavioral": ("Tell me about a time you had to present complex data to non-technical stakeholders.", "At my current employer, I built a claims denial dashboard for our leadership team. I translated denial patterns into plain-language insights with a traffic-light system. The VP said it was the first time she actually understood why denials were spiking. Result: we reduced denial rates by 12% in Q3."),
             "technical": ("Write a SQL query to find the top 3 departments by average salary, excluding departments with fewer than 5 employees.", "SELECT department, AVG(salary) as avg_sal FROM employees GROUP BY department HAVING COUNT(*) >= 5 ORDER BY avg_sal DESC LIMIT 3;"),
             "domain": ("What's the difference between a star schema and a snowflake schema in data warehousing?", "A star schema has denormalized dimension tables directly connected to a central fact table — simpler queries, faster reads. A snowflake schema normalizes dimensions into sub-tables, saving storage but requiring more joins. For analytics workloads, I prefer star schemas because query performance matters more than storage savings."),
             "case_study": ("Your company's customer churn increased 20% last quarter. Walk me through how you'd investigate.", "First, I'd segment churn by customer cohort, product line, and region to find where it's concentrated. Then I'd look at behavioral signals — usage frequency, support tickets, billing issues — in the 90 days before churn. I'd compare churned vs retained customers to identify the strongest predictors. Finally, I'd present findings with a recommendation: if it's onboarding-related, improve the first 30 days; if it's pricing, test retention offers."),
@@ -74,4 +109,4 @@ def seed_demo_data():
                 (now.isoformat(), cat, q, a if a else None, "Strong answer with specific examples." if a else None, 7.5 if a else None),
             )
 
-    return {"status": "ok", "message": "Demo data seeded (14 days of metrics, briefings, and interview sessions)"}
+    return {"status": "ok", "message": "Demo data seeded (sanitized sample data: metrics, briefings, pipeline, interview sessions)"}

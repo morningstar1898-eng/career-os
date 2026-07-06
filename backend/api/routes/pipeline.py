@@ -6,7 +6,16 @@ from api.db import get_db
 
 router = APIRouter()
 
-VALID_STATUSES = ["Applied", "Phone Screen", "Interview", "Offer", "Rejected", "Ghosted", "Withdrawn"]
+# Automation may only create Found / Saved / Drafted / Ready to Apply
+# (enforced in /ingest). "Applied" and beyond are set here — by a manual user
+# action on the authenticated dashboard — or by a confirmed Gmail/application
+# event, because only the user actually submits applications.
+VALID_STATUSES = [
+    "Found", "Saved", "Drafted", "Ready to Apply",
+    "Applied", "Confirmation Received", "Recruiter Screen", "Assessment",
+    "Phone Screen", "Interview", "Offer",
+    "Rejected", "Ghosted", "Withdrawn",
+]
 
 
 class StatusUpdate(BaseModel):
@@ -25,6 +34,8 @@ class ApplicationResponse(BaseModel):
     blob_url: Optional[str] = None
     last_updated: Optional[str] = None
     days_since_applied: Optional[int] = None
+    source: Optional[str] = None
+    validation_status: Optional[str] = None
 
 
 def _enrich(row: dict) -> dict:

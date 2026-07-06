@@ -1,12 +1,12 @@
 import os
-import hashlib
+import hmac
 import secrets
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-router = APIRouter()
+from api.deps import register_session_token, is_valid_token
 
-_tokens: set[str] = set()
+router = APIRouter()
 
 
 class LoginRequest(BaseModel):
@@ -26,16 +26,14 @@ def login(req: LoginRequest):
     expected = os.getenv("CAREER_OS_PASSWORD", "")
     if not expected:
         raise HTTPException(500, "No password configured")
-    if req.password != expected:
+    if not hmac.compare_digest(req.password, expected):
         raise HTTPException(401, "Invalid password")
     token = secrets.token_hex(32)
-    _tokens.add(token)
+    register_session_token(token)
     return LoginResponse(token=token)
 
 
 @router.post("/verify", response_model=VerifyResponse)
 def verify_token(req: dict):
     token = req.get("token", "")
-    if token in _tokens:
-        return VerifyResponse(valid=True)
-    return VerifyResponse(valid=False)
+    return VerifyResponse(valid=bool(token) and is_valid_token(token))

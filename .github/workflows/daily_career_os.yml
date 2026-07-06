@@ -1,21 +1,28 @@
 # .github/workflows/daily_career_os.yml
-# Runs your full agent crew every day at 7:00 AM Central Time (13:00 UTC)
+# Runs the full agent crew every WEEKDAY morning (Central Time).
+# The crew finds jobs, drafts application materials, and prepares a briefing.
+# It never submits applications — the owner reviews and applies manually.
 
 name: Daily Career OS
 
 on:
   schedule:
-    # Many windows (off-peak minutes, clustered in the morning) so GitHub's
-    # unreliable scheduler lands one as early as possible. The duplicate-run
-    # guard ensures only the FIRST that finds no briefing today runs; rest skip.
-    - cron: "17 12 * * *"   # ~7:17a Central
-    - cron: "47 12 * * *"
-    - cron: "17 13 * * *"
-    - cron: "47 13 * * *"
-    - cron: "17 14 * * *"
-    - cron: "17 16 * * *"   # afternoon fallbacks
-    - cron: "17 18 * * *"
+    # Weekdays only (1-5). Several windows (off-peak minutes, clustered in the
+    # morning) so GitHub's unreliable scheduler lands one as early as possible.
+    # The duplicate-run guard ensures only the FIRST that finds no briefing
+    # today runs; the rest skip.
+    - cron: "17 12 * * 1-5"   # ~7:17a Central
+    - cron: "47 12 * * 1-5"
+    - cron: "17 13 * * 1-5"
+    - cron: "47 13 * * 1-5"
+    - cron: "17 14 * * 1-5"
+    - cron: "17 16 * * 1-5"   # afternoon fallbacks
+    - cron: "17 18 * * 1-5"
   workflow_dispatch:
+
+concurrency:
+  group: career-os-daily
+  cancel-in-progress: false
 
 jobs:
   run-career-agents:
@@ -39,7 +46,9 @@ jobs:
         run: |
           SKIP=false
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            CODE=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.API_URL }}/briefings/today")
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+              -H "Authorization: Bearer ${{ secrets.CAREER_OS_API_TOKEN }}" \
+              "${{ secrets.API_URL }}/briefings/today")
             if [ "$CODE" = "200" ]; then SKIP=true; fi
             echo "Scheduled run — briefing endpoint returned $CODE (skip=$SKIP)"
           fi
@@ -58,6 +67,28 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
+
+      # Private profile files are NOT committed to the repo — they are written
+      # at run time from repository secrets (RESUME_TEXT, LINKEDIN_PROFILE_TEXT).
+      - name: Write private profile files from secrets
+        if: steps.guard.outputs.skip == 'false'
+        env:
+          RESUME_TEXT: ${{ secrets.RESUME_TEXT }}
+          LINKEDIN_PROFILE_TEXT: ${{ secrets.LINKEDIN_PROFILE_TEXT }}
+        run: |
+          mkdir -p config
+          if [ -n "$RESUME_TEXT" ]; then
+            printf '%s' "$RESUME_TEXT" > config/resume.txt
+            echo "resume.txt written from secret"
+          else
+            echo "WARNING: RESUME_TEXT secret not set — agents will run without resume context."
+          fi
+          if [ -n "$LINKEDIN_PROFILE_TEXT" ]; then
+            printf '%s' "$LINKEDIN_PROFILE_TEXT" > config/linkedin_profile.txt
+            echo "linkedin_profile.txt written from secret"
+          else
+            echo "NOTE: LINKEDIN_PROFILE_TEXT secret not set — LinkedIn optimizer will note the missing profile."
+          fi
 
       - name: Write .env from secrets
         if: steps.guard.outputs.skip == 'false'
@@ -110,22 +141,30 @@ jobs:
         if: steps.guard.outputs.skip == 'false'
         continue-on-error: true
         run: |
-          HISTORY=$(curl -s "${{ secrets.API_URL }}/interview/history?limit=50" || echo "[]")
+          HISTORY=$(curl -s -H "Authorization: Bearer ${{ secrets.CAREER_OS_API_TOKEN }}" \
+            "${{ secrets.API_URL }}/interview/history?limit=50" || echo "[]")
           WEAK=$(HISTORY_JSON="$HISTORY" python3 -c "
-import json, os
-sessions = json.loads(os.environ.get('HISTORY_JSON','[]'))
-scores, counts = {}, {}
-for s in sessions:
-    cat, score = s.get('category',''), s.get('score')
-    if cat and score is not None:
-        scores[cat] = scores.get(cat,0) + float(score)
-        counts[cat] = counts.get(cat,0) + 1
-if not scores:
-    print('')
-else:
-    avgs = {c: scores[c]/counts[c] for c in scores}
-    print(min(avgs, key=avgs.get))
-" || echo "")
+          import json, os
+          try:
+              sessions = json.loads(os.environ.get('HISTORY_JSON','[]'))
+          except Exception:
+              sessions = []
+          if not isinstance(sessions, list):
+              sessions = []
+          scores, counts = {}, {}
+          for s in sessions:
+              if not isinstance(s, dict):
+                  continue
+              cat, score = s.get('category',''), s.get('score')
+              if cat and score is not None:
+                  scores[cat] = scores.get(cat,0) + float(score)
+                  counts[cat] = counts.get(cat,0) + 1
+          if not scores:
+              print('')
+          else:
+              avgs = {c: scores[c]/counts[c] for c in scores}
+              print(min(avgs, key=avgs.get))
+          " || echo "")
           echo "weak_category=$WEAK" >> "$GITHUB_OUTPUT"
           echo "Weakest interview category: ${WEAK:-none}"
 
@@ -138,11 +177,12 @@ else:
         run: |
           python3 clean_briefing.py > clean_output.txt
           OUTPUT=$(python3 -c "import json; print(json.dumps(open('clean_output.txt', encoding='utf-8').read()))")
-          # Count "Logged N application(s)" lines to report actual jobs applied
-          JOBS_APPLIED=$(grep -oP 'Logged \K[0-9]+(?= application)' crew_output.txt | awk '{s+=$1} END {print s+0}')
+          # Count "Logged N application(s)" lines to report jobs FOUND today
+          JOBS_FOUND=$(grep -oP 'Logged \K[0-9]+(?= application)' crew_output.txt | awk '{s+=$1} END {print s+0}')
           curl -s -X POST "${{ secrets.API_URL }}/ingest/crew-result" \
             -H "Content-Type: application/json" \
-            -d "{\"secret\": \"${{ secrets.INGEST_SECRET }}\", \"crew_output\": $OUTPUT, \"jobs_applied\": ${JOBS_APPLIED:-0}, \"skills_gap_count\": 3, \"portfolio_items\": 2}"
+            -H "Authorization: Bearer ${{ secrets.CAREER_OS_API_TOKEN }}" \
+            -d "{\"secret\": \"${{ secrets.INGEST_SECRET }}\", \"crew_output\": $OUTPUT, \"jobs_found\": ${JOBS_FOUND:-0}, \"skills_gap_count\": 3, \"portfolio_items\": 2}"
 
       - name: Sync applications to pipeline DB
         if: success() && steps.guard.outputs.skip == 'false'
@@ -150,6 +190,7 @@ else:
         env:
           API_URL: ${{ secrets.API_URL }}
           INGEST_SECRET: ${{ secrets.INGEST_SECRET }}
+          CAREER_OS_API_TOKEN: ${{ secrets.CAREER_OS_API_TOKEN }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           GOOGLE_CREDENTIALS_JSON: config/google_credentials.json
         run: python3 sync_applications.py
@@ -160,7 +201,19 @@ else:
         run: |
           curl -s -X POST "${{ secrets.API_URL }}/email/briefing" \
             -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CAREER_OS_API_TOKEN }}" \
             -d '{"secret": "${{ secrets.INGEST_SECRET }}", "to": "${{ secrets.EMAIL_TO }}"}'
+
+      # ── Failure tracking: record failed runs on the dashboard ────────────────
+      - name: Report run failure to dashboard
+        if: failure() && steps.guard.outputs.skip == 'false'
+        continue-on-error: true
+        run: |
+          TAIL=$(tail -c 400 crew_output.txt 2>/dev/null | python3 -c "import json,sys; print(json.dumps(sys.stdin.read()))" || echo '"(no output captured)"')
+          curl -s -X POST "${{ secrets.API_URL }}/ingest/run-failure" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CAREER_OS_API_TOKEN }}" \
+            -d "{\"secret\": \"${{ secrets.INGEST_SECRET }}\", \"stage\": \"workflow\", \"trigger\": \"cron\", \"error_message\": $TAIL}"
 
       # ── Feedback loop: commit today's lesson topic back to the repo ──────────
       # The tutor reads lesson_history.txt at the start of the NEXT run so it

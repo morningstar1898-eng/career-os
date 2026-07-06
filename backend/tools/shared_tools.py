@@ -61,12 +61,28 @@ class NotionWriterTool(BaseTool):
             else:
                 blocks.append({"object":"block","type":"paragraph","paragraph":{"rich_text":[{"type":"text","text":{"content":line}}]}})
 
-        notion.pages.create(
+        # Notion caps children at 100 blocks per request — create the page with
+        # the first chunk, then append the rest in chunks of 100 so long
+        # briefings are never silently truncated.
+        page = notion.pages.create(
             parent={"database_id": db_id},
             properties={"Name": {"title": [{"text": {"content": title}}]}},
-            children=blocks[:100]  # Notion API limit per request
+            children=blocks[:100],
         )
-        return f"✅ Written to Notion: '{title}'"
+        appended = min(len(blocks), 100)
+        failed_chunks = 0
+        for i in range(100, len(blocks), 100):
+            try:
+                notion.blocks.children.append(block_id=page["id"], children=blocks[i:i + 100])
+                appended += len(blocks[i:i + 100])
+            except Exception:
+                failed_chunks += 1
+        if failed_chunks:
+            return (
+                f"⚠️ Written to Notion: '{title}' but {failed_chunks} chunk(s) failed to append "
+                f"({appended}/{len(blocks)} blocks saved). Content may be incomplete."
+            )
+        return f"✅ Written to Notion: '{title}' ({appended} blocks)"
 
 
 # ─────────────────────────────────────────────
@@ -75,9 +91,12 @@ class NotionWriterTool(BaseTool):
 class SheetsLoggerTool(BaseTool):
     name: str = "log_to_sheets"
     description: str = (
-        "Log job applications to Google Sheets. Input is JSON and can be EITHER a single "
-        "object OR an array of objects (preferred — log many at once in one call). Each "
-        "object has keys: company, role, url, status, date_applied, notes."
+        "Log job opportunities to the Google Sheets tracker. Input is JSON and can be EITHER "
+        "a single object OR an array of objects (preferred — log many at once in one call). "
+        "Each object has keys: company, role, url, status, date_applied, notes. "
+        "Status must be 'Found', 'Drafted', or 'Ready to Apply' — never 'Applied': "
+        "this system drafts materials but does NOT submit applications; only the user "
+        "marks a job Applied after submitting it manually."
     )
 
     def _run(self, input_str: str) -> str:
@@ -126,16 +145,22 @@ class SheetsLoggerTool(BaseTool):
             pass  # header is cosmetic; proceed to log regardless
 
         today = datetime.now().strftime("%Y-%m-%d")
+        # Automation may only log these statuses. 'Applied' is reserved for a
+        # manual user action — anything else is coerced to 'Found'.
+        automation_statuses = {"Found", "Drafted", "Ready to Apply"}
         items = data if isinstance(data, list) else [data]
         rows = []
         for d in items:
             if not isinstance(d, dict):
                 continue
+            status = d.get("status", "Found")
+            if status not in automation_statuses:
+                status = "Found"
             rows.append([
                 d.get("company", ""),
                 d.get("role", ""),
                 d.get("url", ""),
-                d.get("status", "Applied"),
+                status,
                 d.get("date_applied", today),
                 d.get("notes", ""),
             ])

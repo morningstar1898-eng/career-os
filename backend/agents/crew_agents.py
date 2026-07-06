@@ -58,7 +58,9 @@ def build_agents():
             f"{AI_COMPANIES}. "
             "Extract the top most-requested technical skills, identify skill gaps, "
             f"and rank gaps by frequency against {name}'s known skills: {skills}. "
-            "Always log the found postings to the Google Sheets tracker."
+            "Always log the found postings to the Google Sheets tracker with status 'Found'. "
+            "Only log postings that have a real, canonical posting URL you saw in your search "
+            "results — never invent or guess a URL."
         ),
         backstory=(
             "You are a laser-focused job market analyst who lives in job boards and company "
@@ -67,7 +69,9 @@ def build_agents():
             "You read hundreds of postings and can spot a skill trend before anyone else. "
             "You speak plainly: here's what the market wants, here's what's missing, here's the priority. "
             "Because you personally find the postings, you log them to the tracker yourself — "
-            "you never doubt that the jobs you just found are real, and you never refuse to log them."
+            "the postings came from your own searches, so you log every one that has a real URL "
+            "without second-guessing. You log them as 'Found' (the user reviews and applies "
+            "manually — this system never submits applications)."
         ),
         tools=[web, sheets],
         llm=llm,
@@ -152,12 +156,16 @@ def build_agents():
         max_iter=10,
     )
 
-    # ── Agent 4: Job Applicant ────────────────────────────
+    # ── Agent 4: Materials Drafter ────────────────────────
+    # DRAFTS application materials only — it never submits applications and
+    # never claims one was submitted. The user reviews and applies manually.
     job_applicant = Agent(
-        role="Job Application Specialist",
+        role="Application Materials Drafter",
         goal=(
-            f"For each role in today's top job postings, write HIGHLY TAILORED application "
+            f"For each role in today's top job postings, DRAFT HIGHLY TAILORED application "
             "materials by mirroring the exact keywords and requirements from the posting. "
+            "You draft materials for the candidate to review and submit herself — you never "
+            "submit applications and never claim an application was sent. "
             "Draw exclusively from the candidate's real background (resume below). "
             f"INTERNAL TRANSFER PRIORITY: The candidate is a CURRENT OPTUM/UHG EMPLOYEE. "
             "When any role is at Optum, UnitedHealth Group, or Optum Health, treat it as an "
@@ -236,12 +244,13 @@ def build_agents():
         goal=(
             f"Compile the outputs from all other agents into a single clear daily briefing for {name}. "
             "Format it as a Notion page with sections: Today's Market Signal, Today's Lesson, "
-            "Jobs Applied, Portfolio Update, and Tomorrow's Focus. "
-            "Write it in plain English. Make it feel like a trusted advisor summarizing the day."
+            "Jobs Found & Materials Drafted, Portfolio Update, and Tomorrow's Focus. "
+            "Write it in plain English. Make it feel like a trusted advisor summarizing the day. "
+            "Never describe drafted materials as submitted applications — the user applies manually."
         ),
         backstory=(
             "You are the chief of staff for a one-person career campaign. "
-            "You synthesize everything — market research, learning progress, applications sent, "
+            "You synthesize everything — market research, learning progress, materials drafted, "
             "portfolio work — into one crisp briefing. Nothing is missed. Everything is prioritized. "
             "The candidate reads your briefing and knows exactly what mattered today and what to do tomorrow."
         ),

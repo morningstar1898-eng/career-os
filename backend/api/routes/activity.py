@@ -54,7 +54,8 @@ def get_recent_activity():
         activities.append({
             "type": "metrics",
             "status": "success",
-            "description": f"Daily metrics recorded — {row['jobs_applied']} jobs applied",
+            # metrics.jobs_applied is a legacy column name — it counts jobs FOUND
+            "description": f"Daily metrics recorded — {row['jobs_applied']} jobs found",
             "timestamp": row["ts"],
         })
 

@@ -46,16 +46,22 @@ def build_tasks(agents: dict) -> list:
             "  2. AI/tech companies (Anthropic, OpenAI, Google, Microsoft, Databricks) — aim for 3-4\n"
             "  3. Best-fit external healthcare/data roles — remaining slots\n\n"
             f"Prioritize {SALARY_TARGET} (senior/mid-senior). "
+            "VALIDATION RULES: only include postings where you have a real, canonical posting "
+            "URL from your search results (the actual job page — prefer the official careers-site "
+            "URL over aggregator links, especially for Optum/UHG internal roles). Never invent, "
+            "guess, or reconstruct a URL. Skip stale or unverifiable postings.\n"
             "For each posting extract required technical skills. Tally across all postings. Output:\n"
             "(A) Top 10 skills ranked by frequency.\n"
             "(B) The 5 most critical skill gaps.\n"
             f"(C) Top {JOBS_PER_DAY} postings as a numbered list — Company | Role | URL | Salary | "
             "Top 3 Required Skills | Internal? (yes/no).\n\n"
             "REQUIRED FINAL STEP — LOG TO SHEETS: Call log_to_sheets once with a JSON array. "
-            "Each item: {\"company\": ..., \"role\": ..., \"url\": ..., \"status\": \"Applied\", "
+            "Each item: {\"company\": ..., \"role\": ..., \"url\": ..., \"status\": \"Found\", "
             "\"date_applied\": \"" + datetime.now().strftime("%Y-%m-%d") + "\", "
             "\"notes\": \"INTERNAL | <salary> | <top skill>\" for Optum/UHG roles, "
             "else \"<salary> | <top skill>\"}. "
+            "Status is ALWAYS \"Found\" — these are opportunities found for the user to review; "
+            "nothing has been applied to. "
             "Do not finish until you see the '✅ Logged N application(s)' confirmation."
         ),
         expected_output=(
@@ -147,11 +153,14 @@ def build_tasks(agents: dict) -> list:
         context=[task_scan],
     )
 
-    # ── Task 4: Apply to jobs ─────────────────────────────
+    # ── Task 4: Draft application materials ──────────────
+    # Drafts ONLY — the user reviews and submits every application herself.
     task_apply = Task(
         description=(
-            f"Today is {TODAY}. Using the job postings list produced in Task 1, write tailored "
+            f"Today is {TODAY}. Using the job postings list produced in Task 1, DRAFT tailored "
             f"application materials for the {FULL_APPLICATIONS} best-fit roles. "
+            "You are drafting materials for the candidate to review and submit manually — "
+            "do NOT claim any application was submitted. "
             "PRIORITIZE in this order: (1) Optum/UHG internal roles, (2) AI/tech company roles, "
             "(3) best-fit external roles.\n\n"
             "═══════════════════════════════════════════════════════════\n"
@@ -345,7 +354,8 @@ def build_tasks(agents: dict) -> list:
             "# Daily Career Briefing — {TODAY}\n"
             "## Today's Market Signal (top 3 skill gaps from Task 1)\n"
             "## Today's Lesson & Interview Q&A (lesson topic + the 5 interview questions with answers)\n"
-            "## Jobs Applied Today (table: company | role | ATS% | status — from Task 4 apply list)\n"
+            "## Jobs Found & Materials Drafted (table: company | role | ATS% | status — from Task 4; "
+            "these are drafts awaiting the user's review, NOT submitted applications)\n"
             "## This Week's Project Idea (portfolio project concept + dataset from Task 2)\n"
             "## Interview Prep (today's 10 practice Q&As by category from Task 5)\n"
             f"{followup_section}\n"

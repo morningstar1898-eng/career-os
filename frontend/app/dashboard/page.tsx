@@ -204,7 +204,8 @@ export default function DashboardPage() {
 
       {summary && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <StatCard label="Jobs Applied" value={summary.total_jobs_applied} />
+          {/* total_jobs_applied is a legacy API field name — it counts jobs FOUND by agents */}
+          <StatCard label="Jobs Found" value={summary.total_jobs_applied} />
           <StatCard label="Successful Runs" value={summary.total_successful_runs} />
           <StatCard label="Avg Interview Score" value={`${summary.avg_interview_score}/10`} />
           <StatCard label="Days Active" value={summary.days_active} />
@@ -279,14 +280,14 @@ export default function DashboardPage() {
                   <p className="text-sm text-zinc-300">{briefing.lesson_summary}</p>
                 </div>
               )}
-              {briefing.jobs_applied && (
+              {(briefing.jobs_found || briefing.jobs_applied) && (
                 <div className="glass-card p-4 sm:p-5">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-base">{SECTION_ICONS.briefcase}</span>
-                    <h3 className="text-sm font-semibold text-accent uppercase tracking-wide">Jobs Applied</h3>
+                    <h3 className="text-sm font-semibold text-accent uppercase tracking-wide">Jobs Found &amp; Drafted</h3>
                   </div>
                   <div className="space-y-1">
-                    {briefing.jobs_applied.map((j: any, i: number) => (
+                    {(briefing.jobs_found || briefing.jobs_applied).map((j: any, i: number) => (
                       <div key={i} className="flex justify-between text-sm text-zinc-300">
                         <span>{j.company} -- {j.role}</span>
                         <span className="text-success text-xs">{j.status}</span>

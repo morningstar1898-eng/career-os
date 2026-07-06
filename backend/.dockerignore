@@ -1,0 +1,19 @@
+# Keep private and local-only files out of the container image.
+config/resume.txt
+config/linkedin_profile.txt
+config/google_credentials.json
+config/kaggle.json
+.env
+*.db
+*.db-wal
+*.db-shm
+outputs/
+crew_output.txt
+clean_output.txt
+__pycache__/
+*.pyc
+.venv*/
+venv/
+tests/
+.pytest_cache/
+.azure/

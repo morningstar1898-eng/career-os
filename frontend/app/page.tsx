@@ -5,19 +5,24 @@ import { useState } from "react";
 import { fetchAPI } from "../lib/api";
 
 const AGENTS = [
-  { label: "Skills Scout", desc: "Scans 100+ job postings for skill trends", icon: "🔍" },
-  { label: "Data Analyst", desc: "Builds portfolio projects from real datasets", icon: "📊" },
+  { label: "Skills Scout", desc: "Scans job postings for skill trends and logs opportunities", icon: "🔍" },
+  { label: "Data Analyst", desc: "Proposes portfolio projects from real datasets", icon: "📊" },
   { label: "Tutor", desc: "Teaches the #1 missing skill each day", icon: "📚" },
-  { label: "Job Applicant", desc: "Tailors resumes and cover letters", icon: "📝" },
+  { label: "Materials Drafter", desc: "Drafts tailored resume bullets and cover letters for review", icon: "📝" },
   { label: "Interview Coach", desc: "Generates personalized Q&A prep", icon: "🎤" },
   { label: "Orchestrator", desc: "Compiles everything into a daily briefing", icon: "🧠" },
 ];
 
 const TECH_STACK = [
-  "Next.js 14", "TypeScript", "Tailwind CSS", "FastAPI", "Python",
+  "Next.js 16", "TypeScript", "Tailwind CSS", "FastAPI", "Python",
   "CrewAI", "Claude AI", "SQLite", "Recharts", "Web Speech API",
   "Azure Blob Storage", "GitHub Actions", "Vercel",
 ];
+
+// Demo seeding is a dev/demo-only affordance — hidden in production unless
+// the deployment is explicitly running in public demo mode.
+const DEMO_ENABLED =
+  process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 export default function Home() {
   const [seeding, setSeeding] = useState(false);
@@ -29,7 +34,7 @@ export default function Home() {
       await fetchAPI("/demo/seed", { method: "POST" });
       setSeeded(true);
     } catch {
-      alert("Start the backend API first (uvicorn api.main:app)");
+      alert("Demo seeding requires the backend API running and a dashboard login (seeding is an authenticated route).");
     }
     setSeeding(false);
   }
@@ -49,9 +54,10 @@ export default function Home() {
           </h1>
 
           <p className="text-base sm:text-xl text-zinc-400 mb-8 leading-relaxed max-w-2xl mx-auto">
-            An autonomous AI system that searches jobs, builds portfolio projects,
-            teaches in-demand skills, preps for interviews, and delivers a daily briefing.
-            Zero manual effort.
+            A human-in-the-loop AI system that finds job opportunities, drafts application
+            materials, proposes portfolio projects, teaches in-demand skills, preps for
+            interviews, and delivers a daily briefing. You review everything and submit
+            every application yourself.
           </p>
 
           <div className="flex gap-4 justify-center flex-wrap">
@@ -67,10 +73,12 @@ export default function Home() {
             <Link href="/resume" className="px-6 py-3 border border-card-border rounded-lg font-medium hover:border-accent transition">
               Resume
             </Link>
-            <button onClick={seedDemo} disabled={seeding || seeded}
-              className="px-6 py-3 border border-card-border rounded-lg font-medium text-zinc-400 hover:border-accent transition disabled:opacity-50">
-              {seeded ? "Demo Loaded" : seeding ? "Loading..." : "Load Demo Data"}
-            </button>
+            {DEMO_ENABLED && (
+              <button onClick={seedDemo} disabled={seeding || seeded}
+                className="px-6 py-3 border border-card-border rounded-lg font-medium text-zinc-400 hover:border-accent transition disabled:opacity-50">
+                {seeded ? "Demo Loaded" : seeding ? "Loading..." : "Load Demo Data"}
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -79,7 +87,8 @@ export default function Home() {
       <section className="px-6 py-20 max-w-5xl mx-auto">
         <h2 className="text-3xl font-bold text-center mb-4">How It Works</h2>
         <p className="text-zinc-400 text-center mb-12 max-w-xl mx-auto">
-          Every weekday at 7am, six AI agents wake up and handle the entire job search pipeline autonomously.
+          Every weekday at 7am, six AI agents research the market, draft materials, and prep
+          a briefing — then hand everything to you for review. Nothing is submitted on your behalf.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
           {AGENTS.map((agent, i) => (

@@ -9,6 +9,8 @@ class RunResponse(BaseModel):
     finished_at: Optional[str] = None
     status: str
     trigger: str
+    stage: Optional[str] = None
+    error_message: Optional[str] = None
 
 
 class RunTriggerRequest(BaseModel):

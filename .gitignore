@@ -1,18 +1,45 @@
+# ── Secrets & environment ─────────────────────────────────
 .env
+.env.*
+!.env.example
 backend/.env
+frontend/.env.local
+
+# ── Private personal files (never commit) ─────────────────
+backend/config/resume.txt
+backend/config/linkedin_profile.txt
 backend/config/google_credentials.json
 backend/config/kaggle.json
-backend/outputs/
+frontend/public/Meagan_Parsons_Resume.docx
+frontend/public/Resume.docx
+frontend/public/Resume.pdf
+frontend/public/resume.pdf
+*.docx
+
+# ── Databases & outputs ────────────────────────────────────
 backend/*.db
+backend/*.db-wal
+backend/*.db-shm
+backend/outputs/
+crew_output.txt
+clean_output.txt
+
+# ── Python ─────────────────────────────────────────────────
 __pycache__/
 *.pyc
-.DS_Store
 venv/
+.venv/
+.venv*/
 *.egg-info/
 dist/
 build/
 .pytest_cache/
+
+# ── Node / Next.js ─────────────────────────────────────────
 node_modules/
 frontend/.next/
 frontend/out/
-.env.local
+*.tsbuildinfo
+
+# ── Misc ───────────────────────────────────────────────────
+.DS_Store

@@ -14,8 +14,8 @@ briefings, an application-pipeline Kanban, interview prep, and analytics.
 Backend runs as a Docker container on Azure App Service (B1, always-on),
 image built by GitHub Actions and pushed to a private GHCR registry.
 
-Agents (backend/agents + crew config): Skills Scout (finds + logs jobs),
-Job Applicant (drafts materials + ATS keyword scoring), Tutor (daily lesson,
+Agents (backend/agents + crew config): Skills Scout (finds + logs jobs as Found),
+Materials Drafter (drafts materials + ATS keyword scoring), Tutor (daily lesson,
 Sonnet), Interview Coach, LinkedIn Optimizer (Mondays, Sonnet), Follow-up
 Tracker. All others run on Claude Haiku 4.5.
 

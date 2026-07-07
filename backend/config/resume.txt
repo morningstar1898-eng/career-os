@@ -4,7 +4,7 @@ NAME: Meagan Parsons
 EMAIL: morningstar1898@gmail.com
 PHONE: (276) 284-0772
 LINKEDIN: linkedin.com/in/meaganparsons
-GITHUB: github.com/meaganparsons
+GITHUB: github.com/morningstar1898-eng
 LOCATION: Lawton, OK (Open to Remote)
 
 ---
@@ -16,7 +16,7 @@ BS, Biochemistry — Oklahoma Baptist University, 2013
 
 ---
 TECHNICAL SKILLS
-  Data & Analytics: SQL, PostgreSQL, Python (pandas, numpy, matplotlib, scikit-learn), Excel (advanced, Power Query), Tableau, Power BI (DAX, semantic models, RLS, Report Builder)
+  Data & Analytics: SQL, PostgreSQL, Python (pandas, numpy, matplotlib), Excel (advanced, Power Query), Tableau, Power BI (DAX, semantic models, RLS, Report Builder)
   Data Engineering: dbt (models, tests, incremental), Azure Data Factory (watermark/CDC incremental loads), Azure Synapse Analytics, Azure Data Lake Storage Gen2, Snowflake (clustering keys, query optimization, schema design)
   Cloud & Infrastructure: Azure (ADF, Synapse, ADLS, Blob Storage), GitHub Actions (CI/CD, cron workflows), Docker (basic)
   AI / Automation: Anthropic Claude API, Python AI agent frameworks (CrewAI), LLM-powered workflow automation, FastAPI
@@ -25,7 +25,7 @@ TECHNICAL SKILLS
 
 ---
 EXPERIENCE
-Coding Quality Analyst / Senior Medical Coder | Optum, UnitedHealth Group | May 2019 - Present
+Coding Quality Analyst | Optum, UnitedHealth Group | May 2019 - Present
   - Audit 500+ medical coding records monthly across HCC risk adjustment, CPT, ICD-10-CM, and HCPCS workflows, maintaining 95%+ accuracy and exceeding production benchmarks consistently
   - Perform root cause analysis on coding discrepancies across high-volume claims datasets, identifying systematic patterns and driving process improvements that reduced resubmission rates
   - Evaluate high-risk clinical documentation for fraud, waste, abuse, risk adjustment gaps, and HCC capture accuracy — directly supporting Optum's revenue integrity and quality reporting mandates
@@ -33,7 +33,7 @@ Coding Quality Analyst / Senior Medical Coder | Optum, UnitedHealth Group | May 
   - Validate production datasets for PHI compliance, data completeness, and coding accuracy across multiple concurrent payer review workflows with competing deadlines
   - Collaborate with clinical, compliance, and data operations teams to translate coding quality findings into actionable recommendations and process documentation
 
-Coding Auditor / Risk Adjustment Coder | CorroHealth | July 2020 - June 2021
+Coding Auditor / Risk Adjustment Coder | CorroHealth | July 2020 - June 2021 (concurrent with Optum role)
   - Promoted to auditor within 6 months based on coding accuracy and analytical output; provided quality review and production guidance to a team of 20 coders
   - Audited risk adjustment and reimbursement data for compliance, HCC capture accuracy, and denial risk — sustaining 95%+ accuracy while exceeding throughput targets
   - Developed audit feedback documentation used by coder team to reduce repeat errors across common ICD-10 and HCC misassignment patterns
@@ -44,16 +44,26 @@ Healthcare Documentation Analyst, ACA Program | Cognosante | January 2019 - May 
 
 ---
 PROJECTS
+Medicare Claims Data Warehouse — Snowflake | 2026
+  - Designed and built a dimensional healthcare claims warehouse in Snowflake: 500K synthetic claims, RAW → STAGING → MARTS layering, star schema for analytics workloads
+  - Implemented 10 platform features hands-on — Streams + Tasks CDC pipeline, zero-copy cloning, Time Travel, clustering keys, VARIANT semi-structured data — and verified each end to end
+  - Public repo: github.com/morningstar1898-eng/medicare-claims-warehouse-snowflake
+
+Healthcare Data Pipeline — Azure Data Factory (Medallion Architecture) | 2026
+  - Built an end-to-end bronze/silver/gold pipeline on ADLS Gen2 + Azure Data Factory: raw claims CSV → typed Parquet → provider-level gold aggregates
+  - Developed two ADF mapping data flows and an orchestration pipeline with a schedule trigger; ran and verified the full pipeline, exported all ADF JSON artifacts
+  - Public repo: github.com/morningstar1898-eng/healthcare-data-pipeline-azure
+
 Career OS — 6-Agent AI Job Search Automation System | 2025–2026
-  - Designed and deployed a multi-agent AI pipeline (Python, CrewAI, Anthropic Claude API) that runs daily via GitHub Actions CI/CD
-  - Agents search job postings, identify skill gaps, generate tailored application materials, create daily lessons, and compile briefings
-  - Backend: Azure App Service (FastAPI), Azure SQL, Azure Blob Storage; frontend: Next.js on Vercel; briefings to Notion + Gmail
-  - System runs fully autonomously, logging 10+ job applications/day to Google Sheets with zero manual intervention
+  - Designed and operate a multi-agent AI pipeline (Python, CrewAI, Anthropic Claude API) that runs daily via GitHub Actions CI/CD
+  - Agents search job postings, identify skill gaps, draft tailored application materials, create daily lessons, and compile briefings
+  - Backend: FastAPI deployed as a Docker container on Azure App Service (CI image build via GitHub Actions → GHCR), SQLite on persistent App Service storage, Azure Blob Storage; frontend: Next.js on Vercel with application-pipeline Kanban
+  - Runs autonomously daily, researching and logging 10 roles/day to a Google Sheets tracker and drafting application materials (applications submitted manually)
 
 MedCoding AI — AI-Powered Medical Coding Audit Tool | 2026
-  - Building a services-first SaaS product that performs second-pass audits of medical coding submissions using LLMs
-  - Designed the core review engine: ingests ICD-10/CPT/HCC codes, cross-references clinical documentation, flags upcoding/undercoding
-  - Stack: Python, FastAPI, Anthropic Claude API; target users: coding managers and RCM teams at health systems
+  - Building a services-first product that performs explainable second-pass audits of medical coding submissions using LLMs
+  - Built the v0 review engine (Python, Streamlit, Anthropic Claude API): links medications to supporting diagnoses with RxNorm/ICD-10 citations, flags unsupported codes, handles clinical negation
+  - Target users: independent coders, coding managers, and RCM teams at small billing companies
 
 Healthcare Fraud Risk Monitoring Dashboard | 2024–2025
   - Analyzed 10,000 healthcare claims across 20 fields to identify fraud-risk patterns using PostgreSQL, Python, and Tableau Cloud
@@ -73,4 +83,4 @@ CERTIFICATIONS
 
 ---
 ABOUT
-Healthcare analyst and data engineer with 5+ years at Optum/UHG, an MBA in Finance & Data Analytics, and a track record of building automated data systems. Combines deep healthcare domain expertise (ICD-10, HCC, revenue integrity, fraud detection) with modern cloud and AI engineering skills — Snowflake, Azure Data Factory, dbt, Python, and Anthropic Claude API. Built and runs a fully autonomous 6-agent AI system for job search automation. Actively transitioning into Data Engineer / Analytics Engineer / AI Data roles at companies building with AI.
+Healthcare data professional with 7 years at Optum/UHG analyzing clinical, claims, and risk-adjustment data, an MBA in Finance & Data Analytics (2026), and a public portfolio of self-built, working data systems — a Snowflake claims warehouse, an Azure Data Factory medallion pipeline, and a multi-agent AI platform that runs in production daily. Combines deep healthcare domain expertise (ICD-10, HCC, revenue integrity, fraud detection) with modern cloud and AI skills — Snowflake, Azure Data Factory, dbt, Python, and Anthropic Claude API. Pattern of independently learning a tool and shipping something real with it, end to end. Actively transitioning into Senior Data Analyst / Analytics Engineer / Data Engineer roles, especially at companies building with AI.

@@ -168,8 +168,11 @@ jobs:
           echo "weak_category=$WEAK" >> "$GITHUB_OUTPUT"
           echo "Weakest interview category: ${WEAK:-none}"
 
+      # Step-level cap: a hung agent (LLM call stuck without timeout) fails fast
+      # here instead of burning the full 150-minute job timeout (seen 2026-07-08).
       - name: Run Career OS agents
         if: steps.guard.outputs.skip == 'false'
+        timeout-minutes: 45
         run: python main.py 2>&1 | tee crew_output.txt
 
       - name: Post results to dashboard API

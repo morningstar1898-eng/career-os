@@ -11,8 +11,10 @@ the steps below breaks the live dashboard and daily briefing.** Reviewed
 - [ ] Run `OneDrive\Desktop\Update-CareerOS-Resume.ps1` — sets the
       `RESUME_TEXT` repo secret from the corrected local resume (and commits
       the corrected resume.txt to the remote, which this WIP then removes).
-- [ ] Set the LinkedIn profile secret:
-      `gh secret set LINKEDIN_PROFILE_TEXT --repo morningstar1898-eng/career-os --body-file backend/config/linkedin_profile.txt`
+- [x] Set the LinkedIn profile secret (done 2026-07-07). NOTE: `gh secret set`
+      has NO `--body-file` flag — pipe the content via stdin instead:
+      `git show master:backend/config/linkedin_profile.txt | gh secret set LINKEDIN_PROFILE_TEXT --repo morningstar1898-eng/career-os`
+      (A failed file read still creates an EMPTY secret with no error — verify with `gh secret list`.)
 - [ ] Generate one long random token and set it BOTH places:
       - GitHub: `gh secret set CAREER_OS_API_TOKEN --repo morningstar1898-eng/career-os`
       - Azure:  `az webapp config appsettings set -n career-os-api -g career-os-rg --settings CAREER_OS_API_TOKEN=<same value>`

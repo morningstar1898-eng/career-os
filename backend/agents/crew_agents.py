@@ -19,9 +19,12 @@ def get_llm():
     )
 
 def get_tutor_llm():
-    """Higher-quality model for the tutor — deep lessons need depth, not speed."""
+    """Higher-quality model for the tutor — deep lessons need depth, not speed.
+    NOTE: must stay on a model that accepts assistant-message prefill (Sonnet 4.5
+    or Haiku 4.5). Claude 4.6+ models reject prefill with a 400, and CrewAI's
+    internals send one on some paths — killed the 2026-07-08 run on sonnet-4-6."""
     return LLM(
-        model="anthropic/claude-sonnet-4-6",
+        model="anthropic/claude-sonnet-4-5-20250929",
         api_key=os.getenv("ANTHROPIC_API_KEY"),
         max_tokens=8096,
         temperature=0.4,

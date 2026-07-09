@@ -43,3 +43,5 @@ frontend/out/
 
 # ── Misc ───────────────────────────────────────────────────
 .DS_Store
+backend/config/applicant_profile.json
+backend/config/resume_for_submit.pdf

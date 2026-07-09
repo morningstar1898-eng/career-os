@@ -150,9 +150,9 @@ def main() -> None:
         write_report(report)
         return
 
-    profile = load_profile()
+    profile, profile_err = load_profile()
     if not profile:
-        report.append("⚠️ APPLICANT_PROFILE_JSON is not set — cannot fill forms. All jobs left manual.")
+        report.append(f"⚠️ Applicant profile unavailable ({profile_err}) — cannot fill forms. All jobs left manual.")
         write_report(report)
         return
 
@@ -249,19 +249,25 @@ def mark_manual(service, job, reason: str, report: list, tag: str, extra_evidenc
     report.append(f"- 👤 {tag}: manual apply — {reason}")
 
 
-def load_profile() -> dict:
+def load_profile() -> tuple[dict, str]:
+    """Returns (profile, error). Strips a leading UTF-8 BOM — PowerShell pipes
+    add one when setting the secret, and it silently breaks json.loads (the
+    same BOM class of bug main.py patches globally for CrewAI tool calls)."""
     raw = os.getenv("APPLICANT_PROFILE_JSON", "")
     if not raw:
         try:
-            with open("config/applicant_profile.json", encoding="utf-8") as f:
+            with open("config/applicant_profile.json", encoding="utf-8-sig") as f:
                 raw = f.read()
         except FileNotFoundError:
-            return {}
+            return {}, "APPLICANT_PROFILE_JSON secret not set"
+    raw = raw.lstrip("﻿").strip()
     try:
         profile = json.loads(raw)
-        return profile if isinstance(profile, dict) and profile.get("email") else {}
-    except json.JSONDecodeError:
-        return {}
+    except json.JSONDecodeError as e:
+        return {}, f"profile JSON does not parse ({e.msg} at char {e.pos})"
+    if not isinstance(profile, dict) or not profile.get("email"):
+        return {}, "profile JSON parsed but is missing 'email'"
+    return profile, ""
 
 
 def write_report(lines: list) -> None:

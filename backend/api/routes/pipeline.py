@@ -6,12 +6,14 @@ from api.db import get_db
 
 router = APIRouter()
 
-# Automation may only create Found / Saved / Drafted / Ready to Apply
-# (enforced in /ingest). "Applied" and beyond are set here — by a manual user
-# action on the authenticated dashboard — or by a confirmed Gmail/application
-# event, because only the user actually submits applications.
+# Automation may only create Found / Saved / Drafted / Ready to Apply, plus
+# "Submitted (auto)" from the auto_submit pipeline — which is set only after a
+# live submission with a captured confirmation page (enforced in /ingest).
+# "Applied" and beyond are set here — by a manual user action on the
+# authenticated dashboard — or by a confirmed Gmail/application event.
 VALID_STATUSES = [
     "Found", "Saved", "Drafted", "Ready to Apply",
+    "Submitted (auto)",
     "Applied", "Confirmation Received", "Recruiter Screen", "Assessment",
     "Phone Screen", "Interview", "Offer",
     "Rejected", "Ghosted", "Withdrawn",
@@ -73,11 +75,12 @@ def get_pipeline_summary():
 
 @router.get("/followup", response_model=list[ApplicationResponse])
 def get_followup_needed(days: int = 7):
-    """Applications still at 'Applied' status after N days with no update."""
+    """Applications still at a submitted status after N days with no update."""
     cutoff = (datetime.utcnow() - timedelta(days=days)).strftime("%Y-%m-%d")
     with get_db() as conn:
         rows = conn.execute(
-            "SELECT * FROM applications WHERE status = 'Applied' AND date_applied <= ? ORDER BY date_applied ASC",
+            "SELECT * FROM applications WHERE status IN ('Applied', 'Submitted (auto)') "
+            "AND date_applied <= ? ORDER BY date_applied ASC",
             (cutoff,)
         ).fetchall()
         return [ApplicationResponse(**_enrich(dict(r))) for r in rows]

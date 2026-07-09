@@ -66,6 +66,15 @@ def main() -> None:
     if not cleaned:
         cleaned = "Briefing generated — see Notion for full details."
 
+    # Append the auto-submit outcome (written by auto_submit/run_auto_submit.py)
+    # so the daily email always answers "what was actually submitted, with proof".
+    try:
+        report = open("submission_report.md", encoding="utf-8").read().strip()
+        if report:
+            cleaned += "\n\n" + report
+    except FileNotFoundError:
+        pass
+
     sys.stdout.write(cleaned)
 
 

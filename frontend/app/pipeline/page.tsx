@@ -6,6 +6,7 @@ import Link from "next/link";
 
 type Status =
   | "Found" | "Drafted" | "Ready to Apply"
+  | "Submitted (auto)"
   | "Applied" | "Phone Screen" | "Interview" | "Offer"
   | "Rejected" | "Ghosted" | "Withdrawn";
 
@@ -22,14 +23,16 @@ interface Application {
 }
 
 // Found / Drafted / Ready to Apply come from the agents (drafts only).
-// Applied and beyond are set manually — the user is the only one who applies.
-const COLUMNS: Status[] = ["Found", "Drafted", "Ready to Apply", "Applied", "Phone Screen", "Interview", "Offer"];
+// Submitted (auto) is set by the auto_submit pipeline after a confirmed live
+// submission (evidence linked in notes). Applied and beyond are set manually.
+const COLUMNS: Status[] = ["Found", "Drafted", "Ready to Apply", "Submitted (auto)", "Applied", "Phone Screen", "Interview", "Offer"];
 const GHOST_COLS: Status[] = ["Rejected", "Ghosted", "Withdrawn"];
 
 const COL_STYLES: Record<Status, { border: string; badge: string; dot: string }> = {
   Found:        { border: "border-sky-500/50",  badge: "bg-sky-900/60 text-sky-300",       dot: "bg-sky-400"    },
   Drafted:      { border: "border-violet-500/50", badge: "bg-violet-900/60 text-violet-300", dot: "bg-violet-400" },
   "Ready to Apply": { border: "border-cyan-500/50", badge: "bg-cyan-900/60 text-cyan-300", dot: "bg-cyan-400"   },
+  "Submitted (auto)": { border: "border-teal-500/60", badge: "bg-teal-900/60 text-teal-300", dot: "bg-teal-400" },
   Applied:      { border: "border-zinc-600",   badge: "bg-zinc-700 text-zinc-300",        dot: "bg-zinc-400"   },
   "Phone Screen": { border: "border-blue-500/60", badge: "bg-blue-900/60 text-blue-300", dot: "bg-blue-400"   },
   Interview:    { border: "border-amber-500/60", badge: "bg-amber-900/60 text-amber-300", dot: "bg-amber-400" },
@@ -83,7 +86,7 @@ export default function PipelinePage() {
   const byStatus = (col: Status) => apps.filter((a) => a.status === col);
 
   const urgentFollowups = apps.filter(
-    (a) => a.status === "Applied" && (a.days_since_applied ?? 0) >= 7
+    (a) => (a.status === "Applied" || a.status === "Submitted (auto)") && (a.days_since_applied ?? 0) >= 7
   );
 
   function daysColor(days: number): string {
@@ -298,7 +301,7 @@ function AppCard({
   daysColor: (d: number) => string;
 }) {
   const days = app.days_since_applied ?? 0;
-  const needsFollowup = app.status === "Applied" && days >= 7;
+  const needsFollowup = (app.status === "Applied" || app.status === "Submitted (auto)") && days >= 7;
 
   return (
     <div

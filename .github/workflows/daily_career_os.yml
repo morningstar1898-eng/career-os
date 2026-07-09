@@ -1,7 +1,14 @@
 # .github/workflows/daily_career_os.yml
 # Runs the full agent crew every WEEKDAY morning (Central Time).
 # The crew finds jobs, drafts application materials, and prepares a briefing.
-# It never submits applications — the owner reviews and applies manually.
+#
+# SUBMISSION is controlled by the APPLY_MODE repository VARIABLE:
+#   - unset / "review" (default): nothing is submitted — the owner applies manually.
+#   - "auto": after the crew runs, the auto_submit pipeline validates each posting
+#     URL, has a separate reviewer agent approve the materials, then submits via
+#     browser automation on supported ATSs (Greenhouse/Lever/Ashby only).
+#     Optum/UHG internal roles are NEVER auto-submitted. Starts in dry-run
+#     (AUTO_SUBMIT_DRY_RUN variable, default true) — see docs/AUTO-SUBMIT.md.
 
 name: Daily Career OS
 
@@ -174,6 +181,25 @@ jobs:
         if: steps.guard.outputs.skip == 'false'
         timeout-minutes: 45
         run: python main.py 2>&1 | tee crew_output.txt
+
+      # ── Auto-submit (opt-in via APPLY_MODE repo variable) ────────────────────
+      # Deterministic pipeline, NOT an LLM free-for-all: URL validation →
+      # reviewer-agent approval → Playwright form fill → evidence screenshot.
+      # continue-on-error so a submission problem never kills the briefing.
+      - name: Auto-submit reviewed applications
+        if: success() && steps.guard.outputs.skip == 'false' && vars.APPLY_MODE == 'auto'
+        timeout-minutes: 25
+        continue-on-error: true
+        env:
+          APPLY_MODE: auto
+          AUTO_SUBMIT_DRY_RUN: ${{ vars.AUTO_SUBMIT_DRY_RUN || 'true' }}
+          MAX_AUTO_SUBMITS_PER_DAY: ${{ vars.MAX_AUTO_SUBMITS_PER_DAY || '5' }}
+          APPLICANT_PROFILE_JSON: ${{ secrets.APPLICANT_PROFILE_JSON }}
+          RESUME_PDF_BLOB: application-materials/resume/resume.pdf
+        run: |
+          pip install "playwright>=1.44"
+          playwright install --with-deps chromium
+          python -m auto_submit.run_auto_submit
 
       - name: Post results to dashboard API
         if: success() && steps.guard.outputs.skip == 'false'

@@ -274,7 +274,7 @@ def build_tasks(agents: dict) -> list:
         description=(
             f"Today is {TODAY}. Read the full Google Sheets job application tracker using "
             "read_from_sheets. Find ALL applications that:\n"
-            "  - Have status 'Applied'\n"
+            "  - Have status 'Applied' or 'Submitted (auto)' (both mean a real submission went out)\n"
             "  - Have a date_applied that is 7 or more days before today\n\n"
             "For each stale application:\n"
             "1. Calculate exact days since applied.\n"

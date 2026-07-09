@@ -1,0 +1,16 @@
+{
+  "_comment": "Template only — NO real values in the repo. Fill this out and set the whole JSON as the APPLICANT_PROFILE_JSON GitHub secret (Setup-AutoSubmit.ps1 does this). Auto-submit fills application forms from these values; anything it can't answer from here makes that job fall back to manual.",
+  "first_name": "Meagan",
+  "last_name": "Parsons",
+  "email": "your-email@example.com",
+  "phone": "555-555-5555",
+  "location": "City, ST",
+  "current_company": "Optum",
+  "linkedin_url": "https://www.linkedin.com/in/your-profile",
+  "github_url": "https://github.com/morningstar1898-eng",
+  "portfolio_url": "",
+  "work_authorization": {
+    "authorized_us": true,
+    "require_sponsorship": false
+  }
+}

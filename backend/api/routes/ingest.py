@@ -12,8 +12,10 @@ logger = logging.getLogger("career_os.ingest")
 
 # Automation may only create these statuses. "Applied" (and everything after
 # it) is reserved for a manual user action — the system never claims an
-# application was submitted when it wasn't.
-AUTOMATION_STATUSES = {"Found", "Saved", "Drafted", "Ready to Apply"}
+# application was submitted when it wasn't. "Submitted (auto)" is the one
+# exception: the auto_submit pipeline sets it ONLY after a live submission
+# with a captured confirmation page (evidence blob linked in notes).
+AUTOMATION_STATUSES = {"Found", "Saved", "Drafted", "Ready to Apply", "Submitted (auto)"}
 MANUAL_STATUSES = {
     "Applied", "Confirmation Received", "Recruiter Screen", "Assessment",
     "Phone Screen", "Interview", "Offer", "Rejected", "Ghosted", "Withdrawn",

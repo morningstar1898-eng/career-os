@@ -18,7 +18,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
 from google.oauth2 import service_account
@@ -68,7 +68,12 @@ def read_rows(service) -> list[dict]:
 
 
 def update_row(service, row_num: int, status: str, note_suffix: str, old_notes: str):
-    notes = (old_notes + " | " if old_notes else "") + note_suffix
+    # Rows in the lookback window can be reprocessed on later runs — don't
+    # append the same note twice.
+    if note_suffix in (old_notes or ""):
+        notes = old_notes
+    else:
+        notes = (old_notes + " | " if old_notes else "") + note_suffix
     service.spreadsheets().values().batchUpdate(
         spreadsheetId=os.getenv("GOOGLE_SHEET_ID"),
         body={"valueInputOption": "USER_ENTERED", "data": [
@@ -93,11 +98,12 @@ def slug(s: str) -> str:
     return (s or "").lower().replace(" ", "-").replace("/", "-")
 
 
-def load_materials(container, company: str, role: str) -> str:
-    """Find the SaveMaterialsTool blob for this company+role from today's run."""
+def load_materials(container, company: str, role: str, date: str) -> str:
+    """Find the SaveMaterialsTool blob for this company+role from the run that
+    logged the row (rows from the lookback window may be older than today)."""
     if container is None:
         return ""
-    prefix = f"application-materials/{TODAY}/"
+    prefix = f"application-materials/{date}/"
     company_slug, role_slug = slug(company), slug(role)[:50]
     best = None
     for blob in container.list_blobs(name_starts_with=prefix):
@@ -158,7 +164,21 @@ def main() -> None:
 
     service = sheets_service()
     rows = read_rows(service)
-    today_rows = [r for r in rows if r.get("date_applied") == TODAY and r.get("company")]
+    # Process a small lookback window, not just today: a day where an agent
+    # step flaked (no materials archived, no rows logged) self-heals on the
+    # next run. Only automation-eligible statuses are picked up — "Ready to
+    # Apply" is terminal (waiting on the user), submitted/manual rows never
+    # re-enter.
+    lookback = int(os.getenv("AUTO_SUBMIT_LOOKBACK_DAYS", "3"))
+    window = {
+        (datetime.now() - timedelta(days=d)).strftime("%Y-%m-%d")
+        for d in range(lookback + 1)
+    }
+    candidate_rows = [
+        r for r in rows
+        if r.get("date_applied") in window and r.get("company")
+        and _norm(r.get("status")) in ("found", "drafted")
+    ]
     already_sent = {
         (_norm(r.get("company")), _norm(r.get("role")))
         for r in rows if _norm(r.get("status")) in ALREADY_SENT_STATUSES
@@ -177,14 +197,21 @@ def main() -> None:
             resume_text = f.read()
     except FileNotFoundError:
         pass
+    if len(resume_text) < 500:
+        # Without the real resume the reviewer can't verify truthfulness —
+        # the run that drafted fabricated materials was exactly a no-resume
+        # run. Nothing auto-submits on a day like that.
+        report.append("⚠️ Resume text unavailable — reviewer cannot verify claims. All jobs left manual.")
+        write_report(report)
+        return
 
     ctx = GateContext(apply_mode=apply_mode, max_per_day=max_per_day, already_sent=already_sent)
     os.makedirs("outputs", exist_ok=True)
 
-    for job in today_rows:
+    for job in candidate_rows:
         company, role = job.get("company", ""), job.get("role", "")
         tag = f"**{company} — {role}**"
-        materials = load_materials(container, company, role)
+        materials = load_materials(container, company, role, job.get("date_applied", TODAY))
 
         gate = decide(job, ctx, has_materials=bool(materials))
         if gate.action == "skip":
@@ -222,7 +249,9 @@ def main() -> None:
                           f"(\"{result.confirmation_text[:100]}\")")
         elif result.outcome == "dry_run_ok":
             ctx.submitted_today += 1  # count against cap so live behavior matches
-            update_row(service, job["_row"], "Ready to Apply",
+            # Stays "Drafted" (not "Ready to Apply") so the row remains
+            # automation-eligible — it submits for real once dry-run is off.
+            update_row(service, job["_row"], "Drafted",
                        f"DRY RUN passed {TODAY} — form filled OK, reviewer approved; "
                        f"screenshot: {evidence}. Set AUTO_SUBMIT_DRY_RUN=false to go live.",
                        job.get("notes", ""))

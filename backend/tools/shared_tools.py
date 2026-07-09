@@ -6,6 +6,7 @@ import os, json, requests
 from datetime import datetime
 from crewai.tools import BaseTool
 from notion_client import Client as NotionClient
+from tools.notion_blocks import build_blocks, TEXT_LIMIT
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
@@ -47,26 +48,17 @@ class NotionWriterTool(BaseTool):
         notion = NotionClient(auth=os.getenv("NOTION_API_KEY"))
         db_id = os.getenv("NOTION_DATABASE_ID")
 
-        # Split content into paragraph blocks
-        blocks = []
-        for line in content.split("\n"):
-            if not line.strip():
-                continue
-            if line.startswith("# "):
-                blocks.append({"object":"block","type":"heading_1","heading_1":{"rich_text":[{"type":"text","text":{"content":line[2:]}}]}})
-            elif line.startswith("## "):
-                blocks.append({"object":"block","type":"heading_2","heading_2":{"rich_text":[{"type":"text","text":{"content":line[3:]}}]}})
-            elif line.startswith("- "):
-                blocks.append({"object":"block","type":"bulleted_list_item","bulleted_list_item":{"rich_text":[{"type":"text","text":{"content":line[2:]}}]}})
-            else:
-                blocks.append({"object":"block","type":"paragraph","paragraph":{"rich_text":[{"type":"text","text":{"content":line}}]}})
+        # Split content into blocks; rich_text is chunked to stay under
+        # Notion's 2000-char-per-text-object limit (a 14k-char line from the
+        # orchestrator killed every write on 2026-07-09).
+        blocks = build_blocks(content)
 
         # Notion caps children at 100 blocks per request — create the page with
         # the first chunk, then append the rest in chunks of 100 so long
         # briefings are never silently truncated.
         page = notion.pages.create(
             parent={"database_id": db_id},
-            properties={"Name": {"title": [{"text": {"content": title}}]}},
+            properties={"Name": {"title": [{"text": {"content": title[:TEXT_LIMIT]}}]}},
             children=blocks[:100],
         )
         appended = min(len(blocks), 100)

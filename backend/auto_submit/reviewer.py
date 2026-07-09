@@ -39,7 +39,14 @@ different company or clearly different role is a REJECT).
 no leftover placeholders (e.g. "[team]", "[role]", "TBD"), no meta-commentary from the \
 drafting agent, and reads as a finished professional letter.
 3. TRUTHFULNESS — every claim in the cover letter is supported by the resume provided. \
-Reject anything that fabricates experience, employers, titles, or credentials.
+Reject anything that fabricates experience, employers, titles, or credentials. \
+KNOWN FACTS about this candidate (violations of these are automatic REJECTs): \
+everything in the resume's PROJECTS section — Career OS, MedCoding AI, the Snowflake \
+warehouse, the Azure pipeline, the fraud/revenue dashboards — is her own INDEPENDENT \
+post-MBA work, NOT employer initiatives; reject any materials presenting them as work \
+done at or for Optum/UHG or any employer. Her job title must appear exactly as the \
+resume states it (no combined, upgraded, or invented titles). Certifications marked \
+'in progress' must not be claimed as earned. All metrics must come from the resume.
 4. EXTRACTION — from the raw materials, extract ONLY the final cover letter text \
 (no resume bullets, no 'ATS Match' lines, no headers like 'COVER LETTER:').
 

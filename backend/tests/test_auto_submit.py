@@ -130,3 +130,66 @@ def test_placeholder_pattern_allows_clean_letter():
     clean = ("As a data analyst with five years at Optum, I improved audit throughput "
              "by 30% and built a Snowflake warehouse for claims analytics.")
     assert not PLACEHOLDER_PATTERN.search(clean)
+
+
+# ── Materials fallback + transient-failure handling (added 2026-07-14) ──────
+# The Haiku drafter proved unreliable at calling save_application_materials
+# (runs 7/11–7/14 archived nothing), so materials now fall back to the raw
+# apply-task output that CrewAI writes deterministically. These lock in that
+# fallback and the keep-status behavior for transient "no materials" days.
+
+from auto_submit import run_auto_submit as ras
+
+
+def test_slice_for_company_returns_window():
+    text = "PADDING " * 200 + "Materials for Databricks — Data Engineer\nDear Databricks team..." + " MORE" * 200
+    sliced = ras._slice_for_company(text, "Databricks")
+    assert "Dear Databricks team" in sliced
+    assert len(sliced) <= 8000 + 500
+
+
+def test_slice_for_company_empty_when_absent():
+    assert ras._slice_for_company("Materials for OpenAI only", "Databricks") == ""
+    assert ras._slice_for_company("", "Databricks") == ""
+    assert ras._slice_for_company("anything", "") == ""
+
+
+def test_slice_for_company_handles_suffixed_names():
+    text = "Cover letter: UnitedHealth Group is where I work..."
+    assert ras._slice_for_company(text, "UnitedHealth Group (Optum)") != ""
+
+
+def test_load_materials_falls_back_to_local_apply_output(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    out = tmp_path / "outputs"
+    out.mkdir()
+    (out / "apply_materials.md").write_text(
+        "EXTERNAL — Databricks — Data Engineer\nDear Databricks team, ...", encoding="utf-8")
+    got = ras.load_materials(None, "Databricks", "Data Engineer", ras.TODAY)
+    assert "Dear Databricks team" in got
+
+
+def test_load_materials_empty_without_any_source(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    assert ras.load_materials(None, "Databricks", "Data Engineer", ras.TODAY) == ""
+
+
+def test_mark_manual_keep_status_preserves_row_status(monkeypatch):
+    calls = {}
+    monkeypatch.setattr(ras, "update_row",
+                        lambda service, row, status, note, old: calls.update(status=status, note=note))
+    row = {"_row": 7, "status": "Found", "notes": "", "company": "Databricks", "role": "DE"}
+    report = []
+    ras.mark_manual(None, row, "no drafted materials found for this role",
+                    report, "**Databricks — DE**", keep_status=True)
+    assert calls["status"] == "Found"
+    assert report and "manual apply" in report[0]
+
+
+def test_mark_manual_default_is_terminal(monkeypatch):
+    calls = {}
+    monkeypatch.setattr(ras, "update_row",
+                        lambda service, row, status, note, old: calls.update(status=status))
+    row = {"_row": 7, "status": "Found", "notes": "", "company": "Databricks", "role": "DE"}
+    ras.mark_manual(None, row, "not a supported ATS", [], "**Databricks — DE**")
+    assert calls["status"] == "Ready to Apply"

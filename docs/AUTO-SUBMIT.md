@@ -28,6 +28,16 @@ means "manual", never "guess":
    and must APPROVE: right company/role, no placeholders, no fabricated claims.
    It also extracts the exact cover-letter text to submit. Fail-closed: any
    error → held for manual review.
+
+   *Materials sourcing (2026-07-14):* the drafter's `save_application_materials`
+   tool calls proved unreliable (whole runs archived nothing, so every job fell
+   to manual). The apply task's raw output is now written deterministically by
+   CrewAI to `outputs/apply_materials.md`, archived to blob under
+   `application-materials/<date>/_apply_task_output.txt`, and used as the
+   materials fallback — the reviewer extracts the per-role cover letter from it.
+   A day where materials are still missing leaves the row in its
+   automation-eligible status so the lookback window retries it next run,
+   instead of parking it terminally in Ready to Apply.
 4. **Submission** (`submitters.py`, Playwright) — fills the form from your
    `APPLICANT_PROFILE_JSON` secret + resume PDF (pulled from private Azure
    blob). If any required field can't be answered from the profile, or a

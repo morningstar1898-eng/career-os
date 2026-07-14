@@ -158,13 +158,42 @@ class SheetsLoggerTool(BaseTool):
             ])
         if not rows:
             return "Error: no valid application objects to log."
+
+        # Dedupe against the whole tracker: the scout re-finds the same postings
+        # day after day (and across same-day reruns), which was flooding the
+        # sheet with duplicate rows. A company+role already logged — whatever
+        # its status — is never logged again.
+        try:
+            existing_vals = values.get(
+                spreadsheetId=sheet_id, range="Sheet1!A:B"
+            ).execute().get("values", [])
+            existing = {
+                ((r[0] if len(r) > 0 else "").strip().lower(),
+                 (r[1] if len(r) > 1 else "").strip().lower())
+                for r in existing_vals
+            }
+        except Exception:
+            existing = set()
+        fresh, skipped = [], 0
+        for r in rows:
+            key = (r[0].strip().lower(), r[1].strip().lower())
+            if key in existing:
+                skipped += 1
+                continue
+            existing.add(key)  # also dedupe within this batch
+            fresh.append(r)
+        if not fresh:
+            return (f"✅ Logged 0 application(s) to Sheets — all {skipped} were "
+                    "already in the tracker (duplicates are skipped automatically).")
+
         values.append(
             spreadsheetId=sheet_id,
             range="Sheet1!A:F",
             valueInputOption="USER_ENTERED",
-            body={"values": rows}
+            body={"values": fresh}
         ).execute()
-        return f"✅ Logged {len(rows)} application(s) to Sheets"
+        note = f" ({skipped} duplicate(s) skipped)" if skipped else ""
+        return f"✅ Logged {len(fresh)} application(s) to Sheets{note}"
 
 
 # ─────────────────────────────────────────────

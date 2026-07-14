@@ -217,6 +217,12 @@ def build_tasks(agents: dict) -> list:
         ),
         agent=agents["job_applicant"],
         context=[task_scan],
+        # Deterministic materials capture: the Haiku drafter is unreliable about
+        # calling save_application_materials (whole runs archived nothing), which
+        # starved auto-submit of materials. CrewAI writes the task's raw output
+        # here itself; run_auto_submit archives it to blob and uses it as the
+        # materials fallback (its reviewer extracts the per-role cover letter).
+        output_file="outputs/apply_materials.md",
     )
 
     # ── Task 5: Interview prep ─────────────────────────────

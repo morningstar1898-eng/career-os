@@ -98,22 +98,80 @@ def slug(s: str) -> str:
     return (s or "").lower().replace(" ", "-").replace("/", "-")
 
 
+# Where CrewAI deterministically writes the apply task's raw output
+# (crew_tasks.py task_apply output_file) — the materials fallback when the
+# drafter didn't call save_application_materials.
+APPLY_OUTPUT_LOCAL = "outputs/apply_materials.md"
+APPLY_OUTPUT_BLOB_BASENAME = "_apply_task_output.txt"
+
+
+def archive_apply_output(container) -> None:
+    """Archive this run's raw apply-task output to blob so lookback rows from a
+    day whose drafter skipped the save tool can still find materials later."""
+    if container is None or not os.path.exists(APPLY_OUTPUT_LOCAL):
+        return
+    try:
+        with open(APPLY_OUTPUT_LOCAL, "rb") as f:
+            container.upload_blob(
+                f"application-materials/{TODAY}/{APPLY_OUTPUT_BLOB_BASENAME}",
+                f, overwrite=True,
+            )
+    except Exception as e:
+        print(f"archive of apply output failed (non-fatal): {e}", file=sys.stderr)
+
+
+def _slice_for_company(text: str, company: str) -> str:
+    """The apply-task output covers several roles; return a window around this
+    company's section so the reviewer's truncated context contains the full
+    letter. Empty when the company never appears — no materials were drafted."""
+    if not text:
+        return ""
+    needle = (company or "").split("/")[0].split("(")[0].strip().lower()
+    if not needle:
+        return ""
+    idx = text.lower().find(needle)
+    if idx == -1:
+        return ""
+    return text[max(0, idx - 500): idx + 7500]
+
+
 def load_materials(container, company: str, role: str, date: str) -> str:
-    """Find the SaveMaterialsTool blob for this company+role from the run that
-    logged the row (rows from the lookback window may be older than today)."""
-    if container is None:
-        return ""
-    prefix = f"application-materials/{date}/"
+    """Materials for this company+role, best source first per date:
+    1. the per-role SaveMaterialsTool blob,
+    2. the archived raw apply-task output for that date,
+    3. (today only) the local apply-task output file from this very run.
+    Checks the row's own date first, then today — a lookback row from an
+    earlier day may have been re-drafted by TODAY's crew, so its materials
+    live under today's prefix. The reviewer extracts the exact cover letter
+    and fail-closes on a miss, so handing it sliced raw task output is safe."""
+    dates = [date] if date == TODAY else [date, TODAY]
     company_slug, role_slug = slug(company), slug(role)[:50]
-    best = None
-    for blob in container.list_blobs(name_starts_with=prefix):
-        name = blob.name[len(prefix):]
-        if company_slug and company_slug in name:
-            if best is None or role_slug[:20] in name:
-                best = blob.name
-    if not best:
-        return ""
-    return container.download_blob(best).readall().decode("utf-8", errors="replace")
+    for d in dates:
+        if container is not None:
+            prefix = f"application-materials/{d}/"
+            best = None
+            for blob in container.list_blobs(name_starts_with=prefix):
+                name = blob.name[len(prefix):]
+                if company_slug and company_slug in name:
+                    if best is None or role_slug[:20] in name:
+                        best = blob.name
+            if best:
+                return container.download_blob(best).readall().decode("utf-8", errors="replace")
+            try:
+                raw = container.download_blob(
+                    prefix + APPLY_OUTPUT_BLOB_BASENAME
+                ).readall().decode("utf-8", errors="replace")
+                sliced = _slice_for_company(raw, company)
+                if sliced:
+                    return sliced
+            except Exception:
+                pass
+        if d == TODAY and os.path.exists(APPLY_OUTPUT_LOCAL):
+            with open(APPLY_OUTPUT_LOCAL, encoding="utf-8", errors="replace") as f:
+                sliced = _slice_for_company(f.read(), company)
+                if sliced:
+                    return sliced
+    return ""
 
 
 def fetch_resume_pdf(container) -> str:
@@ -179,6 +237,14 @@ def main() -> None:
         if r.get("date_applied") in window and r.get("company")
         and _norm(r.get("status")) in ("found", "drafted")
     ]
+    # The scout used to re-log the same posting every run, so the window holds
+    # many rows for one real job. Process each company+role once — the newest
+    # row (it has the freshest URL and notes).
+    by_key = {}
+    for r in candidate_rows:
+        by_key[(_norm(r.get("company")), _norm(r.get("role")))] = r
+    dup_count = len(candidate_rows) - len(by_key)
+    candidate_rows = list(by_key.values())
     already_sent = {
         (_norm(r.get("company")), _norm(r.get("role")))
         for r in rows if _norm(r.get("status")) in ALREADY_SENT_STATUSES
@@ -207,6 +273,9 @@ def main() -> None:
 
     ctx = GateContext(apply_mode=apply_mode, max_per_day=max_per_day, already_sent=already_sent)
     os.makedirs("outputs", exist_ok=True)
+    archive_apply_output(container)
+    if dup_count:
+        report.append(f"({dup_count} duplicate tracker row(s) for the same company+role collapsed)")
 
     for job in candidate_rows:
         company, role = job.get("company", ""), job.get("role", "")
@@ -218,7 +287,11 @@ def main() -> None:
             report.append(f"- ⏭️ {tag}: skipped — {gate.reason}")
             continue
         if gate.action == "manual":
-            mark_manual(service, job, gate.reason, report, tag)
+            # Missing materials is transient (the drafter flaked today) — keep
+            # the row automation-eligible so the lookback window retries it
+            # tomorrow instead of parking it terminally in "Ready to Apply".
+            keep = "no drafted materials" in gate.reason
+            mark_manual(service, job, gate.reason, report, tag, keep_status=keep)
             continue
 
         posting = validate_posting(job.get("url", ""))
@@ -242,6 +315,7 @@ def main() -> None:
 
         if result.outcome == "submitted":
             ctx.submitted_today += 1
+            ctx.already_sent.add((_norm(company), _norm(role)))
             update_row(service, job["_row"], "Submitted (auto)",
                        f"auto-submitted {TODAY}; reviewer-approved; confirmation: "
                        f"'{result.confirmation_text[:80]}'; evidence: {evidence}", job.get("notes", ""))
@@ -267,12 +341,16 @@ def main() -> None:
     write_report(report)
 
 
-def mark_manual(service, job, reason: str, report: list, tag: str, extra_evidence: str = ""):
+def mark_manual(service, job, reason: str, report: list, tag: str,
+                extra_evidence: str = "", keep_status: bool = False):
     note = f"auto-submit: {reason}"
     if extra_evidence:
         note += f"; evidence: {extra_evidence}"
+    # keep_status: transient failures stay in their automation-eligible status
+    # (Found/Drafted) so the lookback window retries them on the next run.
+    status = job.get("status", "Ready to Apply") if keep_status else "Ready to Apply"
     try:
-        update_row(service, job["_row"], "Ready to Apply", note, job.get("notes", ""))
+        update_row(service, job["_row"], status, note, job.get("notes", ""))
     except Exception as e:
         print(f"sheet update failed for {tag}: {e}", file=sys.stderr)
     report.append(f"- 👤 {tag}: manual apply — {reason}")

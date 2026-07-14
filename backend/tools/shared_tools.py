@@ -8,7 +8,7 @@ from crewai.tools import BaseTool
 from notion_client import Client as NotionClient
 from tools.notion_blocks import build_blocks, TEXT_LIMIT
 from googleapiclient.discovery import build
-from google.oauth2 import service_account
+from tools.google_creds import load_google_credentials
 
 # ─────────────────────────────────────────────
 # 1. Web Search Tool (Serper)
@@ -104,7 +104,7 @@ class SheetsLoggerTool(BaseTool):
         except Exception:
             return "Error: input must be valid JSON."
 
-        creds = service_account.Credentials.from_service_account_file(
+        creds = load_google_credentials(
             os.getenv("GOOGLE_CREDENTIALS_JSON"),
             scopes=["https://www.googleapis.com/auth/spreadsheets"]
         )
@@ -179,7 +179,7 @@ class SheetsReaderTool(BaseTool):
     )
 
     def _run(self, query: str = "") -> str:
-        creds = service_account.Credentials.from_service_account_file(
+        creds = load_google_credentials(
             os.getenv("GOOGLE_CREDENTIALS_JSON"),
             scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
         )

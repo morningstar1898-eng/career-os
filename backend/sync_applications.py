@@ -10,7 +10,7 @@ import sys
 import requests
 from datetime import datetime
 from googleapiclient.discovery import build
-from google.oauth2 import service_account
+from tools.google_creds import load_google_credentials
 
 TODAY = datetime.now().strftime("%Y-%m-%d")
 API_URL = os.getenv("API_URL", "").rstrip("/")
@@ -20,7 +20,7 @@ CREDS_PATH = os.getenv("GOOGLE_CREDENTIALS_JSON", "config/google_credentials.jso
 
 
 def read_sheet() -> list[dict]:
-    creds = service_account.Credentials.from_service_account_file(
+    creds = load_google_credentials(
         CREDS_PATH,
         scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
     )

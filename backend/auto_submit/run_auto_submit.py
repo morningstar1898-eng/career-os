@@ -21,7 +21,6 @@ import sys
 from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
-from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 from auto_submit.ats import validate_posting
@@ -30,6 +29,7 @@ from auto_submit.gating import (
 )
 from auto_submit.reviewer import review_application
 from auto_submit.submitters import submit_application
+from tools.google_creds import load_google_credentials
 
 load_dotenv()
 
@@ -45,7 +45,7 @@ def env_flag(name: str, default: str) -> bool:
 # ── Google Sheet helpers ────────────────────────────────────────────────────
 
 def sheets_service():
-    creds = service_account.Credentials.from_service_account_file(
+    creds = load_google_credentials(
         os.getenv("GOOGLE_CREDENTIALS_JSON", "config/google_credentials.json"),
         scopes=["https://www.googleapis.com/auth/spreadsheets"],
     )

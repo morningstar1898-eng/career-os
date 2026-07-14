@@ -15,6 +15,7 @@ from tools.google_creds import load_google_credentials
 TODAY = datetime.now().strftime("%Y-%m-%d")
 API_URL = os.getenv("API_URL", "").rstrip("/")
 INGEST_SECRET = os.getenv("INGEST_SECRET", "")
+API_TOKEN = os.getenv("CAREER_OS_API_TOKEN", "")
 SHEET_ID = os.getenv("GOOGLE_SHEET_ID", "")
 CREDS_PATH = os.getenv("GOOGLE_CREDENTIALS_JSON", "config/google_credentials.json")
 
@@ -40,8 +41,8 @@ def read_sheet() -> list[dict]:
 
 
 def main():
-    if not API_URL or not INGEST_SECRET or not SHEET_ID:
-        print("sync_applications: missing API_URL, INGEST_SECRET, or GOOGLE_SHEET_ID — skipping")
+    if not API_URL or not INGEST_SECRET or not SHEET_ID or not API_TOKEN:
+        print("sync_applications: missing API_URL, INGEST_SECRET, GOOGLE_SHEET_ID, or CAREER_OS_API_TOKEN — skipping")
         return
 
     rows = read_sheet()
@@ -66,7 +67,8 @@ def main():
     ]
 
     payload = {"secret": INGEST_SECRET, "applications": applications}
-    resp = requests.post(f"{API_URL}/ingest/applications", json=payload, timeout=15)
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    resp = requests.post(f"{API_URL}/ingest/applications", json=payload, headers=headers, timeout=15)
     if resp.ok:
         data = resp.json()
         print(f"sync_applications: upserted {data.get('upserted', 0)} application(s) for {TODAY}")
